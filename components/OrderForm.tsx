@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useMarketTicker, useMockWallet } from "@/lib/hooks";
+import { useAuth } from "@/lib/auth";
 import { MOCK_USER_ID } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import type { Market } from "@/lib/types";
 
 export default function OrderForm({ market }: { market: Market | undefined }) {
   const ticker = useMarketTicker(market?.id);
+  const { user } = useAuth();
   const wallets = useMockWallet();
 
   const [side, setSide] = useState<"buy" | "sell">("buy");
@@ -50,7 +52,7 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
     setSubmitting(true);
 
     const { error } = await supabase.from("orders").insert({
-      user_id: MOCK_USER_ID,
+      user_id: user?.id || MOCK_USER_ID,
       market_id: market.id,
       side,
       order_type: orderType,

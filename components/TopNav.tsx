@@ -1,8 +1,9 @@
 "use client";
 
 import { useMarketTicker } from "@/lib/hooks";
+import { useAuth } from "@/lib/auth";
 import type { Market } from "@/lib/types";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, LogIn, LogOut, User } from "lucide-react";
 
 function formatNum(n: number | undefined | null, decimals = 2): string {
   if (n == null) return "—";
@@ -22,6 +23,7 @@ function formatVol(n: number | undefined | null): string {
 
 export default function TopNav({ market }: { market: Market | undefined }) {
   const ticker = useMarketTicker(market?.id);
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
 
   const pctChange = Number(ticker?.price_change_pct_24h || 0);
   const isPositive = pctChange >= 0;
@@ -103,10 +105,43 @@ export default function TopNav({ market }: { market: Market | undefined }) {
         </div>
       )}
 
-      {/* Wallet */}
-      <div className="flex items-center gap-2 ml-auto">
-        <Wallet className="w-4 h-4 text-muted" />
-        <span className="text-sm text-muted">Demo Account</span>
+      {/* Auth */}
+      <div className="flex items-center gap-3 ml-auto">
+        {authLoading ? (
+          <span className="text-xs text-muted">...</span>
+        ) : user ? (
+          <>
+            <div className="flex items-center gap-2">
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt=""
+                  className="w-6 h-6 rounded-full"
+                />
+              ) : (
+                <User className="w-4 h-4 text-muted" />
+              )}
+              <span className="text-xs text-foreground max-w-[120px] truncate">
+                {user.user_metadata?.full_name || user.email}
+              </span>
+            </div>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign out
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={signInWithGoogle}
+            className="flex items-center gap-2 bg-surface border border-border rounded px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card hover:border-primary transition-colors"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Sign in with Google
+          </button>
+        )}
       </div>
     </header>
   );
