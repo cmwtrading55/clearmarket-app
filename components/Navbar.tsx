@@ -61,6 +61,12 @@ export default function Navbar() {
 
         {/* CTA + mobile toggle */}
         <div className="flex items-center gap-4">
+          <Link
+            href="/trade/CML-USDC"
+            className="hidden md:block text-sm font-medium px-4 py-2 rounded-lg border border-primary text-primary hover:bg-primary hover:text-background transition-colors"
+          >
+            Launch Exchange
+          </Link>
           <button
             onClick={() => setModalOpen(true)}
             className="hidden md:block text-sm font-medium px-4 py-2 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors"
@@ -103,6 +109,13 @@ export default function Navbar() {
               </Link>
             )
           )}
+          <Link
+            href="/trade/CML-USDC"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm font-medium px-4 py-2.5 rounded-lg border border-primary text-primary w-fit"
+          >
+            Launch Exchange
+          </Link>
           <button
             onClick={() => {
               setMobileMenuOpen(false);
