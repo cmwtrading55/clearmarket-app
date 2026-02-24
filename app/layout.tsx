@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "ClearMarket Labs Exchange",
-  description: "Professional spot trading exchange by ClearMarket Labs",
+  title: "ClearMarket Labs",
+  description:
+    "Real-world price intelligence for institutional markets — Bayesian pricing oracles, settlement rails, and market infrastructure by ClearMarket Labs",
 };
 
 export default function RootLayout({
@@ -15,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link
-          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <link
@@ -24,6 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <Navbar />
         {children}
       </body>
     </html>

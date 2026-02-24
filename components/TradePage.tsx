@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useMarkets } from "@/lib/hooks";
-import TopNav from "@/components/TopNav";
+import MarketStatsBar from "@/components/MarketStatsBar";
 import MarketSelector from "@/components/MarketSelector";
 import TradingChart from "@/components/TradingChart";
 import OrderBook from "@/components/OrderBook";
@@ -28,16 +28,16 @@ export default function TradePage({ marketSymbol }: { marketSymbol: string }) {
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
-      <TopNav market={currentMarket} />
+      <MarketStatsBar market={currentMarket} />
 
-      <div className="flex-1 grid grid-cols-[220px_1fr_320px] min-h-0">
+      <div className="flex-1 grid grid-cols-[220px_minmax(0,1fr)_320px] min-h-0 min-w-0 overflow-hidden">
         <MarketSelector activeMarket={marketSymbol} />
 
-        <div className="flex flex-col min-h-0 border-r border-border">
-          <div className="flex-[6] min-h-0 border-b border-border">
+        <div className="flex flex-col min-h-0 min-w-0 overflow-hidden border-r border-border">
+          <div className="flex-[6] min-h-0 min-w-0 overflow-hidden border-b border-border">
             <TradingChart marketId={currentMarket?.id} />
           </div>
-          <div className="flex-[4] min-h-0">
+          <div className="flex-[4] min-h-0 overflow-hidden">
             <OrderBook marketId={currentMarket?.id} />
           </div>
         </div>
