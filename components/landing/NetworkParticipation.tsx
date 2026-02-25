@@ -1,4 +1,5 @@
 import { Coins, LineChart } from "lucide-react";
+import LottieAnimation from "../LottieAnimation";
 
 export default function NetworkParticipation() {
   return (
@@ -39,46 +40,48 @@ export default function NetworkParticipation() {
             </ul>
           </div>
 
-          {/* Economic Alignment */}
+          {/* Economic Alignment + Working Capital chart */}
           <div className="p-6 rounded-xl bg-card border border-border">
             <LineChart className="w-8 h-8 text-primary mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-3">
               Economic Alignment Framework
             </h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-2xl font-bold font-mono text-primary">
-                    $0.339
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">
-                    Private Sale Price
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold font-mono text-foreground">
-                    $0.565
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">
-                    Public Launch Price
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold font-mono text-foreground">
-                    200M
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">
-                    Total Supply (fixed)
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold font-mono text-primary">
-                    $12.8M
-                  </p>
-                  <p className="text-xs text-muted mt-0.5">Raise Target</p>
-                </div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <p className="text-2xl font-bold font-mono text-primary">
+                  $0.339
+                </p>
+                <p className="text-xs text-muted mt-0.5">
+                  Private Sale Price
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold font-mono text-foreground">
+                  $0.565
+                </p>
+                <p className="text-xs text-muted mt-0.5">
+                  Public Launch Price
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold font-mono text-foreground">
+                  200M
+                </p>
+                <p className="text-xs text-muted mt-0.5">
+                  Total Supply (fixed)
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold font-mono text-primary">
+                  $12.8M
+                </p>
+                <p className="text-xs text-muted mt-0.5">Raise Target</p>
               </div>
             </div>
+            <LottieAnimation
+              src="/lottie/Graph_04.json"
+              className="w-full rounded-lg bg-surface border border-border p-2"
+            />
           </div>
         </div>
 

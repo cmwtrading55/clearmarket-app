@@ -1,4 +1,5 @@
 import { Brain, Scale, BarChart3, ArrowRight } from "lucide-react";
+import LottieAnimation from "../LottieAnimation";
 
 const STEPS = [
   {
@@ -69,14 +70,20 @@ export default function SolutionSection() {
           ))}
         </div>
 
-        {/* Feature bullets */}
-        <div className="grid sm:grid-cols-2 gap-3">
-          {FEATURES.map((f) => (
-            <div key={f} className="flex items-center gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-              <span className="text-sm text-muted">{f}</span>
-            </div>
-          ))}
+        {/* Lottie + Feature bullets */}
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <LottieAnimation
+            src="/lottie/Graph_01.json"
+            className="w-full max-w-md mx-auto rounded-xl bg-card border border-border p-4"
+          />
+          <div className="space-y-3">
+            {FEATURES.map((f) => (
+              <div key={f} className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                <span className="text-sm text-muted">{f}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

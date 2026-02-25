@@ -9,7 +9,7 @@ import RequestAccessModal from "./RequestAccessModal";
 const NAV_LINKS = [
   { label: "Platform", href: "/" },
   { label: "Markets", href: "/markets" },
-  { label: "Developers", href: "/developers", disabled: true },
+  { label: "Suppliers", href: "/suppliers" },
   { label: "Team", href: "/team" },
 ];
 
@@ -35,28 +35,19 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) =>
-            link.disabled ? (
-              <span
-                key={link.href}
-                className="text-sm text-muted/50 cursor-not-allowed"
-              >
-                {link.label}
-              </span>
-            ) : (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm transition-colors ${
-                  pathname === link.href
-                    ? "text-foreground font-medium"
-                    : "text-muted hover:text-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            )
-          )}
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`text-sm transition-colors ${
+                pathname === link.href
+                  ? "text-foreground font-medium"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         {/* CTA + mobile toggle */}
@@ -86,29 +77,20 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-16 z-40 bg-background/95 backdrop-blur-xl p-6 flex flex-col gap-6">
-          {NAV_LINKS.map((link) =>
-            link.disabled ? (
-              <span
-                key={link.href}
-                className="text-lg text-muted/50 cursor-not-allowed"
-              >
-                {link.label}
-              </span>
-            ) : (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`text-lg ${
-                  pathname === link.href
-                    ? "text-foreground font-medium"
-                    : "text-muted hover:text-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            )
-          )}
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`text-lg ${
+                pathname === link.href
+                  ? "text-foreground font-medium"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
           <Link
             href="/trade/CML-USDC"
             onClick={() => setMobileMenuOpen(false)}

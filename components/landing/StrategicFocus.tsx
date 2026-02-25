@@ -1,4 +1,5 @@
 import { TrendingUp, Globe, Shield } from "lucide-react";
+import LottieAnimation from "../LottieAnimation";
 
 export default function StrategicFocus() {
   return (
@@ -54,9 +55,16 @@ export default function StrategicFocus() {
             </div>
           </div>
 
-          {/* Infrastructure hardening */}
+          {/* Infrastructure hardening + chart */}
           <div className="flex flex-col gap-6">
-            <div className="p-6 rounded-xl bg-card border border-border flex-1">
+            <div className="rounded-xl bg-card border border-border overflow-hidden flex-1">
+              <LottieAnimation
+                src="/lottie/Graph_02.json"
+                className="w-full"
+              />
+            </div>
+
+            <div className="p-6 rounded-xl bg-card border border-border">
               <TrendingUp className="w-8 h-8 text-primary mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 Infrastructure Hardening
