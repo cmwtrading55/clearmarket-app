@@ -26,11 +26,14 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (destination?: string) => {
+    if (destination) {
+      sessionStorage.setItem("cml-auth-redirect", destination);
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + "/trade/CML-USDC",
+        redirectTo: window.location.origin + "/auth/callback",
       },
     });
     if (error) console.error("Sign in error:", error.message);

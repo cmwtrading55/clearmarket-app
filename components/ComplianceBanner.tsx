@@ -1,0 +1,8 @@
+export default function ComplianceBanner() {
+  return (
+    <div className="bg-red-600/90 text-white text-center text-xs py-1.5 px-4 font-medium">
+      ClearMarket Labs is a prototype platform. This is not financial advice and
+      does not constitute a regulated financial service.
+    </div>
+  );
+}

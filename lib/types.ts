@@ -108,3 +108,79 @@ export interface OrderBookData {
   spread: number;
   spreadPct: number;
 }
+
+// Batch marketplace types
+
+export type BatchStatus = "funding" | "growing" | "harvested" | "settled";
+
+export interface Batch {
+  id: string;
+  strain: string;
+  grower: string;
+  growerId: string;
+  price: number;
+  tokenSymbol: string;
+  fundingPercent: number;
+  fundingTarget: number;
+  fundingRaised: number;
+  status: BatchStatus;
+  harvestDate: string;
+  heroImage: string;
+  region: string;
+  riskGrade: "A" | "B" | "C" | "D";
+  thcPercent: number;
+  cbdPercent: number;
+  yieldKg: number;
+  description: string;
+  createdAt: string;
+}
+
+export interface Grower {
+  id: string;
+  name: string;
+  avatar: string;
+  location: string;
+  region: string;
+  type: "indoor" | "outdoor" | "greenhouse";
+  rating: number;
+  trustScore: number;
+  batchCount: number;
+  totalVolume: number;
+  verified: boolean;
+  joinedDate: string;
+  bio: string;
+  specialities: string[];
+}
+
+export interface ActivityEvent {
+  id: string;
+  type: "buy" | "sell" | "fund" | "harvest" | "settle";
+  batchId: string;
+  strain: string;
+  user: string;
+  amount: number;
+  price: number;
+  timestamp: string;
+}
+
+export interface PortfolioHolding {
+  id: string;
+  batchId: string;
+  strain: string;
+  grower: string;
+  tokens: number;
+  avgPrice: number;
+  currentPrice: number;
+  status: BatchStatus;
+  pnl: number;
+  pnlPercent: number;
+}
+
+export interface Payout {
+  id: string;
+  batchId: string;
+  strain: string;
+  amount: number;
+  date: string;
+  status: "completed" | "pending" | "processing";
+}

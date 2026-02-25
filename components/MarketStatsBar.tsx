@@ -136,7 +136,7 @@ export default function MarketStatsBar({
           </>
         ) : (
           <button
-            onClick={signInWithGoogle}
+            onClick={() => signInWithGoogle()}
             className="flex items-center gap-2 bg-surface border border-border rounded px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card hover:border-primary transition-colors"
           >
             <LogIn className="w-3.5 h-3.5" />

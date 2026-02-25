@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import ComplianceBanner from "@/components/ComplianceBanner";
 import Navbar from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -8,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "ClearMarket Labs",
   description:
-    "Real-world price intelligence for institutional markets — Bayesian pricing oracles, settlement rails, and market infrastructure by ClearMarket Labs",
+    "Tokenised crop markets for cannabis supply chains — bonding curves, settlement rails, and grower infrastructure by ClearMarket Labs",
 };
 
 export default function RootLayout({
@@ -25,6 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
+        <ComplianceBanner />
         <Navbar />
         {children}
       </body>
