@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050D1A;
-  --foreground: #E8ECF1;
-  --primary: #00E5A0;
-  --secondary: #0A1628;
-  --card-bg: #0F1D32;
-  --muted: #6B7A8D;
-  --accent-glow: rgba(0, 229, 160, 0.15);
+  --background: #FFFFFF;
+  --foreground: #111827;
+  --primary: #00C98D;
+  --secondary: #F3F4F6;
+  --card-bg: #F9FAFB;
+  --muted: #6B7280;
+  --accent-glow: rgba(0, 201, 141, 0.10);
 }
 
 @theme inline {
@@ -17,12 +17,12 @@
   --color-secondary: var(--secondary);
   --color-surface: var(--secondary);
   --color-card: var(--card-bg);
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border: #E5E7EB;
   --color-muted: var(--muted);
   --color-accent-glow: var(--accent-glow);
-  --color-buy: #4ADE80;
-  --color-sell: #F15B5B;
-  --color-warning: #FACC15;
+  --color-buy: #16A34A;
+  --color-sell: #DC2626;
+  --color-warning: #D97706;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
@@ -46,13 +46,13 @@ body {
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(135deg, #00E5A0, #00B8D4);
+  background: linear-gradient(135deg, #00A676, #0094A8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Scrollbar styling for dark theme */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -63,7 +63,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: #D1D5DB;
   border-radius: 3px;
 }
 

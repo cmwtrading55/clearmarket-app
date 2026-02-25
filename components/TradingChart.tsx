@@ -54,25 +54,25 @@ export default function TradingChart({
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: "#0F1D32" },
-        textColor: "#6B7A8D",
+        background: { type: ColorType.Solid, color: "#FFFFFF" },
+        textColor: "#6B7280",
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: "#1E2D3D" },
-        horzLines: { color: "#1E2D3D" },
+        vertLines: { color: "#F3F4F6" },
+        horzLines: { color: "#F3F4F6" },
       },
       crosshair: {
-        vertLine: { color: "#6B7A8D", width: 1, style: 2, labelBackgroundColor: "#0F1D32" },
-        horzLine: { color: "#6B7A8D", width: 1, style: 2, labelBackgroundColor: "#0F1D32" },
+        vertLine: { color: "#9CA3AF", width: 1, style: 2, labelBackgroundColor: "#F9FAFB" },
+        horzLine: { color: "#9CA3AF", width: 1, style: 2, labelBackgroundColor: "#F9FAFB" },
       },
       rightPriceScale: {
-        borderColor: "#1E2D3D",
+        borderColor: "#E5E7EB",
         scaleMargins: { top: 0.1, bottom: 0.1 },
       },
       timeScale: {
-        borderColor: "#1E2D3D",
+        borderColor: "#E5E7EB",
         timeVisible: true,
         secondsVisible: false,
       },
@@ -84,29 +84,29 @@ export default function TradingChart({
     // Add series based on chart type
     if (chartType === "candlestick") {
       seriesRef.current = chart.addSeries(CandlestickSeries, {
-        upColor: "#4ADE80",
-        downColor: "#F15B5B",
-        borderUpColor: "#4ADE80",
-        borderDownColor: "#F15B5B",
-        wickUpColor: "#4ADE80",
-        wickDownColor: "#F15B5B",
+        upColor: "#16A34A",
+        downColor: "#DC2626",
+        borderUpColor: "#16A34A",
+        borderDownColor: "#DC2626",
+        wickUpColor: "#16A34A",
+        wickDownColor: "#DC2626",
       });
     } else if (chartType === "line") {
       seriesRef.current = chart.addSeries(LineSeries, {
-        color: "#00E5A0",
+        color: "#00C98D",
         lineWidth: 2,
       });
     } else if (chartType === "area") {
       seriesRef.current = chart.addSeries(AreaSeries, {
-        lineColor: "#00E5A0",
-        topColor: "rgba(0, 229, 160, 0.3)",
-        bottomColor: "rgba(0, 229, 160, 0.02)",
+        lineColor: "#00C98D",
+        topColor: "rgba(0, 201, 141, 0.2)",
+        bottomColor: "rgba(0, 201, 141, 0.02)",
         lineWidth: 2,
       });
     } else if (chartType === "bar") {
       seriesRef.current = chart.addSeries(BarSeries, {
-        upColor: "#4ADE80",
-        downColor: "#F15B5B",
+        upColor: "#16A34A",
+        downColor: "#DC2626",
       });
     }
 
