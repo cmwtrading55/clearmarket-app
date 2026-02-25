@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMarkets } from "@/lib/hooks";
+import { useMarkets, useTradeSimulator } from "@/lib/hooks";
 import MarketStatsBar from "@/components/MarketStatsBar";
 import MarketSelector from "@/components/MarketSelector";
 import TradingChart from "@/components/TradingChart";
@@ -17,6 +17,8 @@ export default function TradePage({ marketSymbol }: { marketSymbol: string }) {
     () => markets.find((m) => m.symbol === marketSymbol),
     [markets, marketSymbol]
   );
+
+  useTradeSimulator(currentMarket?.id);
 
   if (loading) {
     return (

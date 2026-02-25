@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "./supabase";
 import type {
   Market,
@@ -15,6 +15,38 @@ import type {
   OrderBookLevel,
 } from "./types";
 import { MOCK_USER_ID } from "./constants";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sealcisjhqlrpmuescsu.supabase.co";
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlYWxjaXNqaHFscnBtdWVzY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDUwNDYsImV4cCI6MjA4NjQ4MTA0Nn0.P_hNdWsn1O7wz4j25-ji1dQ_lJwviWgG5NXF6LcObiA";
+
+export function useTradeSimulator(marketId: string | undefined) {
+  const tickRef = useRef(0);
+
+  useEffect(() => {
+    if (!marketId) return;
+
+    const interval = setInterval(async () => {
+      tickRef.current++;
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/simulate-trade`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            market_id: marketId,
+            tick_count: tickRef.current,
+          }),
+        });
+      } catch {
+        // silent fail — simulator is best-effort
+      }
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [marketId]);
+}
 
 export function useMarkets() {
   const [markets, setMarkets] = useState<MarketWithTicker[]>([]);
@@ -271,7 +303,7 @@ export function useCandles(marketId: string | undefined, interval: string) {
     if (!marketId) return;
     setLoading(true);
 
-    async function fetch() {
+    async function fetchCandles() {
       const { data } = await supabase
         .from("market_candles")
         .select("*")
@@ -284,7 +316,38 @@ export function useCandles(marketId: string | undefined, interval: string) {
       setLoading(false);
     }
 
-    fetch();
+    fetchCandles();
+
+    const channel = supabase
+      .channel(`candles_${marketId}_${interval}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "market_candles",
+          filter: `market_id=eq.${marketId}`,
+        },
+        (payload) => {
+          const updated = payload.new as MarketCandle;
+          if (updated.interval !== interval) return;
+
+          setCandles((prev) => {
+            const idx = prev.findIndex((c) => c.id === updated.id);
+            if (idx >= 0) {
+              const next = [...prev];
+              next[idx] = updated;
+              return next;
+            }
+            return [...prev, updated];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [marketId, interval]);
 
   return { candles, loading };

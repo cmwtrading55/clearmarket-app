@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useMarketTicker, useMockWallet } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
-import { MOCK_USER_ID } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
 import type { Market } from "@/lib/types";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sealcisjhqlrpmuescsu.supabase.co";
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlYWxjaXNqaHFscnBtdWVzY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDUwNDYsImV4cCI6MjA4NjQ4MTA0Nn0.P_hNdWsn1O7wz4j25-ji1dQ_lJwviWgG5NXF6LcObiA";
 
 export default function OrderForm({ market }: { market: Market | undefined }) {
   const ticker = useMarketTicker(market?.id);
@@ -51,29 +52,45 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
 
     setSubmitting(true);
 
-    const { error } = await supabase.from("orders").insert({
-      user_id: user?.id || MOCK_USER_ID,
-      market_id: market.id,
-      side,
-      order_type: orderType,
-      status: "open",
-      price: orderType === "limit" ? priceNum : null,
-      quantity: amountNum,
-      filled_quantity: 0,
-      remaining_quantity: amountNum,
-      time_in_force: "gtc",
-    });
+    try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${ANON_KEY}`,
+      };
+      // If user is authenticated, pass their session token instead
+      if (user) {
+        const { data } = await (await import("@/lib/supabase")).supabase.auth.getSession();
+        if (data.session?.access_token) {
+          headers.Authorization = `Bearer ${data.session.access_token}`;
+        }
+      }
 
-    setSubmitting(false);
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/place-order`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          market_id: market.id,
+          side,
+          order_type: orderType,
+          price: orderType === "limit" ? priceNum : null,
+          quantity: amountNum,
+        }),
+      });
 
-    if (error) {
-      setToast(`Error: ${error.message}`);
-    } else {
-      setToast(`${side.toUpperCase()} order placed`);
-      setAmount("");
-      if (orderType === "limit") setPrice("");
+      const result = await res.json();
+
+      if (!res.ok) {
+        setToast(`Error: ${result.error || "Order failed"}`);
+      } else {
+        setToast(`${side.toUpperCase()} order placed`);
+        setAmount("");
+        if (orderType === "limit") setPrice("");
+      }
+    } catch (err) {
+      setToast(`Error: ${String(err)}`);
     }
 
+    setSubmitting(false);
     setTimeout(() => setToast(null), 3000);
   };
 
