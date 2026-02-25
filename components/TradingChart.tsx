@@ -140,43 +140,92 @@ export default function TradingChart({
     return () => resizeObserver.disconnect();
   }, [chartType]);
 
+  // Track whether we've done the initial setData
+  const initialDataSetRef = useRef(false);
+  const prevCandlesLenRef = useRef(0);
+
+  // Reset initial flag when chart type changes
+  useEffect(() => {
+    initialDataSetRef.current = false;
+    prevCandlesLenRef.current = 0;
+  }, [chartType]);
+
   // Update data when candles change
   useEffect(() => {
     if (!seriesRef.current || candles.length === 0) return;
 
-    if (chartType === "candlestick") {
-      const data: CandlestickData<Time>[] = candles.map((c) => ({
-        time: (new Date(c.open_time).getTime() / 1000) as Time,
-        open: Number(c.open),
-        high: Number(c.high),
-        low: Number(c.low),
-        close: Number(c.close),
-      }));
-      (seriesRef.current as ISeriesApi<"Candlestick">).setData(data);
-    } else if (chartType === "line") {
-      const data: LineData<Time>[] = candles.map((c) => ({
-        time: (new Date(c.open_time).getTime() / 1000) as Time,
-        value: Number(c.close),
-      }));
-      (seriesRef.current as ISeriesApi<"Line">).setData(data);
-    } else if (chartType === "area") {
-      const data: AreaData<Time>[] = candles.map((c) => ({
-        time: (new Date(c.open_time).getTime() / 1000) as Time,
-        value: Number(c.close),
-      }));
-      (seriesRef.current as ISeriesApi<"Area">).setData(data);
-    } else if (chartType === "bar") {
-      const data: BarData<Time>[] = candles.map((c) => ({
-        time: (new Date(c.open_time).getTime() / 1000) as Time,
-        open: Number(c.open),
-        high: Number(c.high),
-        low: Number(c.low),
-        close: Number(c.close),
-      }));
-      (seriesRef.current as ISeriesApi<"Bar">).setData(data);
-    }
+    const series = seriesRef.current;
+    const isInitial = !initialDataSetRef.current;
 
-    chartRef.current?.timeScale().fitContent();
+    if (isInitial) {
+      // First load: setData with all candles
+      if (chartType === "candlestick") {
+        const data: CandlestickData<Time>[] = candles.map((c) => ({
+          time: (new Date(c.open_time).getTime() / 1000) as Time,
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+        }));
+        (series as ISeriesApi<"Candlestick">).setData(data);
+      } else if (chartType === "line") {
+        const data: LineData<Time>[] = candles.map((c) => ({
+          time: (new Date(c.open_time).getTime() / 1000) as Time,
+          value: Number(c.close),
+        }));
+        (series as ISeriesApi<"Line">).setData(data);
+      } else if (chartType === "area") {
+        const data: AreaData<Time>[] = candles.map((c) => ({
+          time: (new Date(c.open_time).getTime() / 1000) as Time,
+          value: Number(c.close),
+        }));
+        (series as ISeriesApi<"Area">).setData(data);
+      } else if (chartType === "bar") {
+        const data: BarData<Time>[] = candles.map((c) => ({
+          time: (new Date(c.open_time).getTime() / 1000) as Time,
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+        }));
+        (series as ISeriesApi<"Bar">).setData(data);
+      }
+      chartRef.current?.timeScale().fitContent();
+      initialDataSetRef.current = true;
+      prevCandlesLenRef.current = candles.length;
+    } else {
+      // Live update: just update the last candle (smooth, no flicker)
+      const last = candles[candles.length - 1];
+      const time = (new Date(last.open_time).getTime() / 1000) as Time;
+
+      if (chartType === "candlestick") {
+        (series as ISeriesApi<"Candlestick">).update({
+          time,
+          open: Number(last.open),
+          high: Number(last.high),
+          low: Number(last.low),
+          close: Number(last.close),
+        });
+      } else if (chartType === "line") {
+        (series as ISeriesApi<"Line">).update({ time, value: Number(last.close) });
+      } else if (chartType === "area") {
+        (series as ISeriesApi<"Area">).update({ time, value: Number(last.close) });
+      } else if (chartType === "bar") {
+        (series as ISeriesApi<"Bar">).update({
+          time,
+          open: Number(last.open),
+          high: Number(last.high),
+          low: Number(last.low),
+          close: Number(last.close),
+        });
+      }
+
+      // If a new candle was added (new hour), scroll to show it
+      if (candles.length > prevCandlesLenRef.current) {
+        chartRef.current?.timeScale().scrollToRealTime();
+      }
+      prevCandlesLenRef.current = candles.length;
+    }
   }, [candles, chartType]);
 
   return (

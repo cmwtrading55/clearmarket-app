@@ -1,47 +1,149 @@
-import { mockActivity } from "@/data/mockActivity";
-import { TrendingUp, TrendingDown, Sprout, Leaf, CheckCircle } from "lucide-react";
+"use client";
 
-const TYPE_CONFIG = {
-  buy: { icon: TrendingUp, color: "text-buy", label: "Bought" },
-  sell: { icon: TrendingDown, color: "text-sell", label: "Sold" },
-  fund: { icon: Sprout, color: "text-primary", label: "Funded" },
-  harvest: { icon: Leaf, color: "text-warning", label: "Harvested" },
-  settle: { icon: CheckCircle, color: "text-primary", label: "Settled" },
-};
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { TrendingUp, TrendingDown } from "lucide-react";
+
+interface RecentTrade {
+  id: string;
+  price: number;
+  quantity: number;
+  is_maker_buy: boolean;
+  executed_at: string;
+  market_symbol?: string;
+}
 
 function timeAgo(ts: string): string {
   const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
+  const secs = Math.floor(diff / 1000);
+  if (secs < 60) return `${secs}s ago`;
+  const mins = Math.floor(secs / 60);
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+function shortenId(id: string): string {
+  return `0x${id.slice(0, 4)}...${id.slice(-4)}`;
+}
+
 export default function ActivityFeed() {
+  const [trades, setTrades] = useState<RecentTrade[]>([]);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    async function fetchTrades() {
+      const { data } = await supabase
+        .from("trades")
+        .select("id, price, quantity, is_maker_buy, executed_at, market_id")
+        .order("executed_at", { ascending: false })
+        .limit(8);
+
+      if (!data) return;
+
+      // Get market symbols for display
+      const marketIds = [...new Set(data.map((t) => t.market_id))];
+      const { data: markets } = await supabase
+        .from("markets")
+        .select("id, symbol")
+        .in("id", marketIds);
+
+      const symbolMap = new Map(
+        (markets || []).map((m) => [m.id, m.symbol])
+      );
+
+      setTrades(
+        data.map((t) => ({
+          id: t.id,
+          price: Number(t.price),
+          quantity: Number(t.quantity),
+          is_maker_buy: t.is_maker_buy,
+          executed_at: t.executed_at,
+          market_symbol: symbolMap.get(t.market_id) || "CML-USDC",
+        }))
+      );
+    }
+
+    fetchTrades();
+
+    // Subscribe to new trades across all markets
+    const channel = supabase
+      .channel("activity_feed_trades")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "trades" },
+        (payload) => {
+          const t = payload.new as {
+            id: string;
+            price: string;
+            quantity: string;
+            is_maker_buy: boolean;
+            executed_at: string;
+          };
+          setTrades((prev) =>
+            [
+              {
+                id: t.id,
+                price: Number(t.price),
+                quantity: Number(t.quantity),
+                is_maker_buy: t.is_maker_buy,
+                executed_at: t.executed_at,
+                market_symbol: "CML-USDC",
+              },
+              ...prev,
+            ].slice(0, 8)
+          );
+        }
+      )
+      .subscribe();
+
+    // Refresh "time ago" labels every 10s
+    const timer = setInterval(() => setTick((t) => t + 1), 10000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(timer);
+    };
+  }, []);
+
   return (
     <div className="bg-card-bg border border-border rounded-xl p-4">
-      <h3 className="text-sm font-medium text-foreground mb-4">Recent Activity</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-medium text-foreground">Recent Activity</h3>
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+        </span>
+      </div>
       <div className="space-y-3">
-        {mockActivity.slice(0, 6).map((event) => {
-          const config = TYPE_CONFIG[event.type];
-          const Icon = config.icon;
+        {trades.length === 0 && (
+          <p className="text-xs text-muted text-center py-4">Loading activity...</p>
+        )}
+        {trades.map((trade) => {
+          const isBuy = trade.is_maker_buy;
+          const Icon = isBuy ? TrendingUp : TrendingDown;
+          const color = isBuy ? "text-buy" : "text-sell";
+          const label = isBuy ? "bought" : "sold";
+
           return (
-            <div key={event.id} className="flex items-start gap-3">
-              <div className={`mt-0.5 ${config.color}`}>
+            <div key={trade.id} className="flex items-start gap-3">
+              <div className={`mt-0.5 ${color}`}>
                 <Icon size={16} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-foreground truncate">
-                  <span className="text-muted">{event.user}</span>{" "}
-                  <span className={config.color}>{config.label.toLowerCase()}</span>{" "}
-                  {event.amount > 0 && (
-                    <span className="font-mono">
-                      {event.amount.toLocaleString()} tokens
-                    </span>
-                  )}
+                  <span className="text-muted">{shortenId(trade.id)}</span>{" "}
+                  <span className={color}>{label}</span>{" "}
+                  <span className="font-mono">
+                    {trade.quantity.toLocaleString()} tokens
+                  </span>{" "}
+                  <span className="text-muted">@</span>{" "}
+                  <span className="font-mono">${trade.price.toFixed(4)}</span>
                 </p>
-                <p className="text-xs text-muted">{event.strain} &middot; {timeAgo(event.timestamp)}</p>
+                <p className="text-xs text-muted">
+                  {trade.market_symbol} &middot; {timeAgo(trade.executed_at)}
+                </p>
               </div>
             </div>
           );
