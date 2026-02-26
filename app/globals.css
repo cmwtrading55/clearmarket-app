@@ -17,6 +17,7 @@
   --color-secondary: var(--secondary);
   --color-surface: var(--secondary);
   --color-card: var(--card-bg);
+  --color-card-bg: var(--card-bg);
   --color-border: #E5E7EB;
   --color-muted: var(--muted);
   --color-accent-glow: var(--accent-glow);
