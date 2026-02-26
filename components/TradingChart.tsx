@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useCandles } from "@/lib/hooks";
+import { supabase } from "@/lib/supabase";
 import { INTERVALS, type IntervalValue } from "@/lib/constants";
 import {
   createChart,
@@ -29,6 +30,22 @@ const CHART_TYPES: { type: ChartType; icon: React.ElementType; label: string }[]
   { type: "bar", icon: BarChart3, label: "Bar" },
 ];
 
+/* Interval → seconds mapping for bucket calculation */
+const INTERVAL_SECONDS: Record<string, number> = {
+  "1h": 3600,
+  "4h": 14400,
+  "1d": 86400,
+  "1w": 604800,
+};
+
+interface OhlcBar {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
 export default function TradingChart({
   marketId,
 }: {
@@ -41,6 +58,9 @@ export default function TradingChart({
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | ISeriesApi<"Line"> | ISeriesApi<"Area"> | ISeriesApi<"Bar"> | null>(null);
+
+  /* Last bar currently displayed on chart — mutated imperatively for perf */
+  const lastBarRef = useRef<OhlcBar | null>(null);
 
   const createChartInstance = useCallback(() => {
     if (!chartContainerRef.current) return;
@@ -153,13 +173,14 @@ export default function TradingChart({
   const initialDataSetRef = useRef(false);
   const prevCandlesLenRef = useRef(0);
 
-  // Reset initial flag when chart type changes
+  // Reset initial flag when chart type or interval changes
   useEffect(() => {
     initialDataSetRef.current = false;
     prevCandlesLenRef.current = 0;
-  }, [chartType]);
+    lastBarRef.current = null;
+  }, [chartType, interval]);
 
-  // Update data when candles change
+  // Load historical candles into chart
   useEffect(() => {
     if (!seriesRef.current || candles.length === 0) return;
 
@@ -202,8 +223,18 @@ export default function TradingChart({
       chartRef.current?.timeScale().fitContent();
       initialDataSetRef.current = true;
       prevCandlesLenRef.current = candles.length;
+
+      // Seed lastBarRef from the last historical candle
+      const last = candles[candles.length - 1];
+      lastBarRef.current = {
+        time: Math.floor(new Date(last.open_time).getTime() / 1000),
+        open: Number(last.open),
+        high: Number(last.high),
+        low: Number(last.low),
+        close: Number(last.close),
+      };
     } else {
-      // Live update: just update the last candle (smooth, no flicker)
+      // DB-driven update (fallback): update last candle from server-side candle data
       const last = candles[candles.length - 1];
       const time = (new Date(last.open_time).getTime() / 1000) as Time;
 
@@ -229,13 +260,126 @@ export default function TradingChart({
         });
       }
 
-      // If a new candle was added (new hour), scroll to show it
+      // Sync lastBarRef with DB candle
+      lastBarRef.current = {
+        time: Math.floor(new Date(last.open_time).getTime() / 1000),
+        open: Number(last.open),
+        high: Number(last.high),
+        low: Number(last.low),
+        close: Number(last.close),
+      };
+
       if (candles.length > prevCandlesLenRef.current) {
         chartRef.current?.timeScale().scrollToRealTime();
       }
       prevCandlesLenRef.current = candles.length;
     }
   }, [candles, chartType]);
+
+  /*
+   * Live trade stream → chart update
+   *
+   * Subscribes directly to the trades table via Supabase Realtime.
+   * Builds/updates candles client-side from the tape using series.update().
+   * Works for ALL intervals (1h, 4h, 1d, 1w) regardless of server-side candle writes.
+   * rAF-batched: accumulates trades and flushes once per frame.
+   */
+  useEffect(() => {
+    if (!marketId) return;
+
+    const intervalSecs = INTERVAL_SECONDS[interval] || 3600;
+    let rafId: number | null = null;
+    let pendingPrice: number | null = null;
+    let pendingTs: number | null = null;
+
+    function processTrade(tradePrice: number, tradeTsSec: number) {
+      const series = seriesRef.current;
+      const last = lastBarRef.current;
+      if (!series || !last) return;
+
+      const bucketTime = Math.floor(tradeTsSec / intervalSecs) * intervalSecs;
+
+      // Ignore stale trades from before the current bar
+      if (bucketTime < last.time) return;
+
+      if (bucketTime === last.time) {
+        // Update existing bar
+        last.high = Math.max(last.high, tradePrice);
+        last.low = Math.min(last.low, tradePrice);
+        last.close = tradePrice;
+      } else {
+        // New bar — close old, start new
+        const newBar: OhlcBar = {
+          time: bucketTime,
+          open: last.close,
+          high: tradePrice,
+          low: tradePrice,
+          close: tradePrice,
+        };
+        lastBarRef.current = newBar;
+      }
+
+      // Push to chart
+      const bar = lastBarRef.current!;
+      if (chartType === "candlestick" || chartType === "bar") {
+        (series as ISeriesApi<"Candlestick"> | ISeriesApi<"Bar">).update({
+          time: bar.time as Time,
+          open: bar.open,
+          high: bar.high,
+          low: bar.low,
+          close: bar.close,
+        });
+      } else {
+        (series as ISeriesApi<"Line"> | ISeriesApi<"Area">).update({
+          time: bar.time as Time,
+          value: bar.close,
+        });
+      }
+
+      // If new bar was created, scroll to keep it visible
+      if (bucketTime > last.time) {
+        chartRef.current?.timeScale().scrollToRealTime();
+      }
+    }
+
+    const channel = supabase
+      .channel(`chart_live_${marketId}_${interval}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "trades",
+          filter: `market_id=eq.${marketId}`,
+        },
+        (payload) => {
+          const trade = payload.new as { price: number; executed_at: string };
+          const price = Number(trade.price);
+          const tsSec = Math.floor(new Date(trade.executed_at).getTime() / 1000);
+
+          // rAF batch: store latest trade, flush once per frame
+          pendingPrice = price;
+          pendingTs = tsSec;
+
+          if (!rafId) {
+            rafId = requestAnimationFrame(() => {
+              rafId = null;
+              if (pendingPrice !== null && pendingTs !== null) {
+                processTrade(pendingPrice, pendingTs);
+                pendingPrice = null;
+                pendingTs = null;
+              }
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [marketId, interval, chartType]);
 
   return (
     <div className="flex flex-col h-full bg-card">
