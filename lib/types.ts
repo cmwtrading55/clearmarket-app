@@ -184,3 +184,42 @@ export interface Payout {
   date: string;
   status: "completed" | "pending" | "processing";
 }
+
+// Launchpad types
+
+export type LaunchpadStatus = "draft" | "pending_review" | "approved" | "rejected" | "funding";
+
+export interface LaunchpadListing {
+  id: string;
+  grower_wallet: string;
+  grower_name: string | null;
+  grower_location: string | null;
+  grower_type: "indoor" | "outdoor" | "greenhouse" | null;
+  strain: string;
+  description: string | null;
+  hero_image: string | null;
+  region: string | null;
+  yield_kg: number | null;
+  thc_percent: number | null;
+  cbd_percent: number | null;
+  harvest_date: string | null;
+  funding_target: number | null;
+  price_per_token: number | null;
+  token_symbol: string | null;
+  grow_method: string | null;
+  lighting: string | null;
+  nutrients: string | null;
+  facility_certification: string | null;
+  lab_testing_provider: string | null;
+  expected_terpene_profile: string | null;
+  insurance_coverage: boolean;
+  contracted_buyer: boolean;
+  contracted_buyer_name: string | null;
+  completeness_score: number;
+  history_score: number;
+  oracle_discount_pct: number;
+  risk_grade: "A" | "B" | "C" | "D";
+  status: LaunchpadStatus;
+  created_at: string;
+  updated_at: string;
+}

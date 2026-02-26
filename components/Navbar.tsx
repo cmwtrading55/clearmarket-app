@@ -11,6 +11,7 @@ import ProfileDropdown from "./ProfileDropdown";
 const NAV_LINKS = [
   { label: "Explore", href: "/" },
   { label: "Growers", href: "/growers" },
+  { label: "Launchpad", href: "/launchpad" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Exchange", href: "/trade/CML-USDC" },
