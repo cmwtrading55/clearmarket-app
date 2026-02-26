@@ -4,7 +4,7 @@ import { useWallet } from "@/lib/wallet";
 import { mockHoldings, mockPayouts } from "@/data/mockPortfolio";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { Wallet, TrendingUp, TrendingDown, DollarSign, Package, PieChart } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, DollarSign, Package, PieChart, Coins } from "lucide-react";
 
 const STATUS_STYLES = {
   funding: "bg-primary/10 text-primary",
@@ -20,7 +20,7 @@ const PAYOUT_STYLES = {
 };
 
 export default function PortfolioPage() {
-  const { connected, balance } = useWallet();
+  const { connected, balance, solBalance } = useWallet();
 
   if (!connected) {
     return (
@@ -45,6 +45,7 @@ export default function PortfolioPage() {
     { icon: Package, label: "Batches Held", value: mockHoldings.length.toString() },
     { icon: totalPnl >= 0 ? TrendingUp : TrendingDown, label: "Total P&L", value: `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, color: totalPnl >= 0 ? "text-buy" : "text-sell" },
     { icon: PieChart, label: "Payouts Received", value: `$${totalPayouts.toLocaleString()}` },
+    { icon: Coins, label: "SOL Balance", value: `${solBalance.toFixed(2)} SOL` },
   ];
 
   return (
@@ -58,7 +59,7 @@ export default function PortfolioPage() {
         </div>
 
         {/* Summary */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {summaryCards.map((card) => {
             const Icon = card.icon;
             return (
@@ -77,7 +78,10 @@ export default function PortfolioPage() {
 
         {/* Holdings */}
         <div className="bg-card-bg border border-border rounded-xl p-6">
-          <h2 className="text-sm font-medium text-foreground mb-4">Holdings</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-sm font-medium text-foreground">Holdings</h2>
+            <span className="text-[10px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">SPL Token Accounts</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -85,7 +89,7 @@ export default function PortfolioPage() {
                   <th className="text-left py-2 pr-4 font-medium">Batch</th>
                   <th className="text-left py-2 pr-4 font-medium">Grower</th>
                   <th className="text-left py-2 pr-4 font-medium">Status</th>
-                  <th className="text-right py-2 pr-4 font-medium">Tokens</th>
+                  <th className="text-right py-2 pr-4 font-medium">SPL Tokens</th>
                   <th className="text-right py-2 pr-4 font-medium">Avg Price</th>
                   <th className="text-right py-2 pr-4 font-medium">Current</th>
                   <th className="text-right py-2 font-medium">P&L</th>

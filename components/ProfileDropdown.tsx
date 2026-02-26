@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { User, Settings, Shield, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, Shield, LogOut, ChevronDown, ExternalLink } from "lucide-react";
 import { useWallet } from "@/lib/wallet";
+import { shortenAddress, solscanAccountUrl } from "@/lib/solana";
 
 interface Props {
   onDisconnect: () => void;
@@ -11,7 +12,7 @@ interface Props {
 
 export default function ProfileDropdown({ onDisconnect }: Props) {
   const [open, setOpen] = useState(false);
-  const { address, provider } = useWallet();
+  const { address, provider, solBalance } = useWallet();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export default function ProfileDropdown({ onDisconnect }: Props) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const shortAddr = address ? `${address.slice(0, 4)}...${address.slice(-4)}` : "";
+  const shortAddr = address ? shortenAddress(address) : "";
 
   return (
     <div ref={ref} className="relative">
@@ -40,10 +41,30 @@ export default function ProfileDropdown({ onDisconnect }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-card-bg border border-border rounded-xl shadow-xl overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-2 w-64 bg-card-bg border border-border rounded-xl shadow-xl overflow-hidden z-50">
           <div className="p-3 border-b border-border">
-            <p className="text-xs text-muted capitalize">{provider}</p>
-            <p className="text-xs font-mono text-foreground truncate">{address}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted capitalize">{provider}</p>
+              <span className="flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                <span className="w-1 h-1 rounded-full bg-primary" />
+                Solana
+              </span>
+            </div>
+            <p className="text-xs font-mono text-foreground truncate mt-1">{address}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs font-mono text-foreground">
+                {solBalance.toFixed(2)} SOL
+              </span>
+              <a
+                href={address ? solscanAccountUrl(address) : "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 transition-colors"
+              >
+                View on Solscan
+                <ExternalLink size={10} />
+              </a>
+            </div>
           </div>
           <div className="py-1">
             <Link

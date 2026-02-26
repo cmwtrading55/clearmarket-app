@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useWallet } from "@/lib/wallet";
+import { SOLANA_NETWORK } from "@/lib/solana";
 
 const WALLETS = [
   {
@@ -15,12 +16,6 @@ const WALLETS = [
     name: "Solflare",
     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='24' fill='%23FC7227'/%3E%3Cpath d='M64 28L38 100h16l10-28 10 28h16L64 28z' fill='white'/%3E%3C/svg%3E",
     color: "#FC7227",
-  },
-  {
-    id: "metamask",
-    name: "MetaMask",
-    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='24' fill='%23F6851B'/%3E%3Cpath d='M100 38L82 48l-6-10L64 28 52 38l-6 10-18-10-6 16 10 18-4 16 10 6 12-4 14 6 14-6 12 4 10-6-4-16 10-18-6-16z' fill='white' stroke='%23E4761B' stroke-width='1'/%3E%3C/svg%3E",
-    color: "#F6851B",
   },
 ];
 
@@ -43,11 +38,22 @@ export default function ConnectWalletModal({ open, onClose }: Props) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-card-bg border border-border rounded-2xl w-full max-w-sm mx-4 p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-semibold text-foreground">Connect Wallet</h2>
           <button onClick={onClose} className="text-muted hover:text-foreground transition-colors">
             <X size={20} />
           </button>
+        </div>
+
+        {/* Solana network badge */}
+        <div className="flex items-center gap-1.5 mb-5">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+          </span>
+          <span className="text-xs text-muted capitalize">
+            Solana {SOLANA_NETWORK.replace("-", " ")}
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -62,18 +68,29 @@ export default function ConnectWalletModal({ open, onClose }: Props) {
                 alt={wallet.name}
                 className="w-10 h-10 rounded-lg"
               />
-              <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                {wallet.name}
-              </span>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                  {wallet.name}
+                </span>
+                <span className="text-[10px] text-muted">Solana Wallet</span>
+              </div>
             </button>
           ))}
         </div>
 
-        <div className="mt-4 pt-4 border-t border-border">
-          <p className="text-xs text-muted text-center">
-            This is a mock wallet connection for demonstration purposes.
-            No real blockchain transactions will occur.
-          </p>
+        {/* Powered by Solana footer */}
+        <div className="mt-5 pt-4 border-t border-border flex items-center justify-center gap-2">
+          <svg
+            className="w-3.5 h-3.5 text-muted"
+            viewBox="0 0 397.7 311.7"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z" />
+            <path d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" />
+            <path d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z" />
+          </svg>
+          <span className="text-xs text-muted">Powered by Solana</span>
         </div>
       </div>
     </div>

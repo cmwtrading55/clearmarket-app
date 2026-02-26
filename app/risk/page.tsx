@@ -14,8 +14,9 @@ export default function RiskPage() {
         <div className="bg-warning/5 border border-warning/20 rounded-xl p-5 text-sm text-foreground/80 leading-relaxed">
           <p className="font-medium text-warning mb-2">Important</p>
           <p>
-            ClearMarket Labs is a prototype demonstration platform. All trades, tokens, prices, and
-            transactions shown are simulated and do not involve real assets or funds.
+            ClearMarket Labs is a prototype demonstration platform built on Solana. All trades, tokens, prices, and
+            transactions shown are simulated and do not involve real assets or funds. No Solana programs
+            have been deployed to mainnet.
           </p>
         </div>
 
@@ -44,6 +45,14 @@ export default function RiskPage() {
           <p>
             Cannabis markets are subject to varying and evolving regulations across jurisdictions.
             Changes in law may affect the viability of tokenised crop markets.
+          </p>
+
+          <h2 className="text-lg font-semibold text-foreground">Solana Network Risk</h2>
+          <p>
+            ClearMarket Labs operates on the Solana blockchain. Users should be aware of risks
+            specific to Solana including: network congestion during high-demand periods, smart
+            contract (program) vulnerabilities, SPL token custody risks, and potential validator
+            downtime. Transactions are final once confirmed on-chain and cannot be reversed.
           </p>
 
           <h2 className="text-lg font-semibold text-foreground">No Guarantees</h2>

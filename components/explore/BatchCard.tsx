@@ -53,7 +53,10 @@ export default function BatchCard({ batch, onQuickBuy }: Props) {
         {/* Price + yield */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-muted">Token Price</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted">Token Price</p>
+              <span className="text-[9px] font-mono text-primary bg-primary/10 px-1 py-0.5 rounded">SPL</span>
+            </div>
             <p className="text-lg font-semibold font-mono text-foreground">${batch.price.toFixed(2)}</p>
           </div>
           <div className="text-right">

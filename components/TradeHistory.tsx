@@ -1,6 +1,8 @@
 "use client";
 
 import { useTradeHistory } from "@/lib/hooks";
+import { deterministicTxSig, solscanTxUrl } from "@/lib/solana";
+import { ExternalLink } from "lucide-react";
 
 function formatTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString("en-GB", {
@@ -50,12 +52,16 @@ export default function TradeHistory({
               : trade.is_maker_buy;
 
             return (
-              <div
+              <a
                 key={trade.id}
-                className="grid grid-cols-3 gap-2 px-3 py-0.5 text-xs"
+                href={solscanTxUrl(deterministicTxSig(trade.id))}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="grid grid-cols-3 gap-2 px-3 py-0.5 text-xs group hover:bg-primary/5 transition-colors"
               >
-                <span className="font-mono text-muted">
+                <span className="font-mono text-muted flex items-center gap-1">
                   {formatTime(trade.executed_at)}
+                  <ExternalLink size={8} className="opacity-0 group-hover:opacity-100 text-primary transition-opacity" />
                 </span>
                 <span
                   className={`font-mono text-right ${
@@ -67,7 +73,7 @@ export default function TradeHistory({
                 <span className="font-mono text-right text-foreground">
                   {Number(trade.quantity).toFixed(2)}
                 </span>
-              </div>
+              </a>
             );
           })
         )}

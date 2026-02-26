@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMarketTicker, useMockWallet } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import type { Market } from "@/lib/types";
+import { mockTxSignature, shortenAddress, solscanTxUrl } from "@/lib/solana";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sealcisjhqlrpmuescsu.supabase.co";
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlYWxjaXNqaHFscnBtdWVzY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDUwNDYsImV4cCI6MjA4NjQ4MTA0Nn0.P_hNdWsn1O7wz4j25-ji1dQ_lJwviWgG5NXF6LcObiA";
@@ -18,7 +19,7 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
   const [price, setPrice] = useState("");
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; txSig?: string } | null>(null);
 
   const quoteWallet = wallets.find(
     (w) => w.asset_id === market?.quote_asset_id
@@ -80,14 +81,15 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
       const result = await res.json();
 
       if (!res.ok) {
-        setToast(`Error: ${result.error || "Order failed"}`);
+        setToast({ message: `Error: ${result.error || "Order failed"}` });
       } else {
-        setToast(`${side.toUpperCase()} order placed`);
+        const txSig = mockTxSignature();
+        setToast({ message: `${side.toUpperCase()} order placed`, txSig });
         setAmount("");
         if (orderType === "limit") setPrice("");
       }
     } catch (err) {
-      setToast(`Error: ${String(err)}`);
+      setToast({ message: `Error: ${String(err)}` });
     }
 
     setSubmitting(false);
@@ -219,7 +221,19 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
 
         {/* Toast */}
         {toast && (
-          <div className="text-xs text-center text-primary py-1">{toast}</div>
+          <div className="text-xs text-center py-1 space-y-0.5">
+            <p className="text-primary">{toast.message}</p>
+            {toast.txSig && (
+              <a
+                href={solscanTxUrl(toast.txSig)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted hover:text-primary transition-colors font-mono"
+              >
+                tx: {shortenAddress(toast.txSig, 6)} &#8599;
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>

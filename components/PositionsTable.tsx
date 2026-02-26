@@ -133,7 +133,7 @@ export default function PositionsTable({
               <div className="px-3 py-2 border-b border-border">
                 <div className="flex justify-between text-xs">
                   <span className="text-muted">
-                    {market?.symbol.split("-")[0]} Balance
+                    {market?.symbol.split("-")[0]} SPL Balance
                   </span>
                   <span className="font-mono text-foreground">
                     {Number(baseWallet.balance).toLocaleString()}
@@ -158,7 +158,7 @@ export default function PositionsTable({
             {quoteWallet && (
               <div className="px-3 py-2">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted">USDC Balance</span>
+                  <span className="text-muted">USDC Balance (Solana)</span>
                   <span className="font-mono text-foreground">
                     {Number(quoteWallet.balance).toLocaleString()}
                   </span>

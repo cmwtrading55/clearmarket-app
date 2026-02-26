@@ -7,6 +7,8 @@ export interface WalletState {
   address: string | null;
   provider: string | null;
   balance: number;
+  solBalance: number;
+  network: string;
 }
 
 const STORAGE_KEY = "cml-wallet";
@@ -16,6 +18,8 @@ const defaultState: WalletState = {
   address: null,
   provider: null,
   balance: 0,
+  solBalance: 0,
+  network: "mainnet-beta",
 };
 
 let listeners: (() => void)[] = [];
@@ -72,6 +76,8 @@ export function connectWallet(provider: string) {
     address: mockAddress(),
     provider,
     balance: parseFloat((Math.random() * 10000 + 500).toFixed(2)),
+    solBalance: parseFloat((Math.random() * 48 + 2).toFixed(2)),
+    network: "mainnet-beta",
   });
 }
 
