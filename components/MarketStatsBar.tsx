@@ -34,26 +34,26 @@ export default function MarketStatsBar({
   const isPositive = pctChange >= 0;
 
   return (
-    <header className="flex items-center h-14 px-4 bg-card border-b border-border shrink-0">
+    <header className="flex items-center h-12 md:h-14 px-3 md:px-4 bg-card border-b border-border shrink-0 min-w-0 overflow-hidden">
       {/* Wordmark — links back to landing */}
-      <Link href="/" className="flex items-center gap-2 mr-6">
+      <Link href="/" className="flex items-center gap-2 mr-3 md:mr-6 shrink-0">
         <div className="w-2 h-2 rounded-full bg-primary" />
-        <span className="text-lg font-bold tracking-tight text-foreground">
+        <span className="text-base md:text-lg font-bold tracking-tight text-foreground">
           ClearMarket Labs
         </span>
-        <span className="text-xs text-muted px-2 py-0.5 rounded bg-surface border border-border">
+        <span className="hidden sm:inline text-xs text-muted px-2 py-0.5 rounded bg-surface border border-border">
           Exchange
         </span>
       </Link>
 
       {/* Market symbol + ticker data */}
       {market && (
-        <div className="flex items-center gap-6 flex-1 min-w-0">
-          <span className="text-base font-bold text-foreground">
+        <div className="flex items-center gap-3 md:gap-6 flex-1 min-w-0 overflow-x-auto">
+          <span className="text-sm md:text-base font-bold text-foreground shrink-0">
             {market.symbol}
           </span>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col shrink-0">
             <span className="text-xs text-muted">Last Price</span>
             <span
               className={`font-mono text-sm font-medium ${
@@ -64,7 +64,7 @@ export default function MarketStatsBar({
             </span>
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col shrink-0">
             <span className="text-xs text-muted">24h Change</span>
             <div className="flex items-center gap-1">
               {isPositive ? (
@@ -83,21 +83,21 @@ export default function MarketStatsBar({
             </div>
           </div>
 
-          <div className="flex flex-col">
+          <div className="hidden sm:flex flex-col shrink-0">
             <span className="text-xs text-muted">24h High</span>
             <span className="font-mono text-sm text-foreground">
               {formatNum(ticker?.high_24h, 3)}
             </span>
           </div>
 
-          <div className="flex flex-col">
+          <div className="hidden sm:flex flex-col shrink-0">
             <span className="text-xs text-muted">24h Low</span>
             <span className="font-mono text-sm text-foreground">
               {formatNum(ticker?.low_24h, 3)}
             </span>
           </div>
 
-          <div className="flex flex-col">
+          <div className="hidden lg:flex flex-col shrink-0">
             <span className="text-xs text-muted">24h Volume</span>
             <span className="font-mono text-sm text-foreground">
               {formatVol(ticker?.volume_quote_24h)}
@@ -107,7 +107,7 @@ export default function MarketStatsBar({
       )}
 
       {/* Auth */}
-      <div className="flex items-center gap-3 ml-auto">
+      <div className="flex items-center gap-2 md:gap-3 ml-auto shrink-0">
         {authLoading ? (
           <span className="text-xs text-muted">...</span>
         ) : user ? (

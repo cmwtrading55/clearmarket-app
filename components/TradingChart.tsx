@@ -126,18 +126,27 @@ export default function TradingChart({
     };
   }, [createChartInstance]);
 
-  // Handle resize
+  // Handle resize — guard against zero dimensions (mobile layout transitions)
   useEffect(() => {
     const container = chartContainerRef.current;
     if (!container || !chartRef.current) return;
 
+    let rafId: number | null = null;
     const resizeObserver = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      chartRef.current?.applyOptions({ width, height });
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const { width, height } = entries[0].contentRect;
+        if (width > 0 && height > 0) {
+          chartRef.current?.applyOptions({ width, height });
+        }
+      });
     });
 
     resizeObserver.observe(container);
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [chartType]);
 
   // Track whether we've done the initial setData
