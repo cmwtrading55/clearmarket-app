@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useMarketTicker } from "@/lib/hooks";
-import { useAuth } from "@/lib/auth";
+import { useWallet } from "@/lib/wallet";
 import type { Market } from "@/lib/types";
-import { TrendingUp, TrendingDown, LogIn, LogOut, User } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import ConnectWalletModal from "./ConnectWalletModal";
+import ProfileDropdown from "./ProfileDropdown";
 
 function formatNum(n: number | undefined | null, decimals = 2): string {
   if (n == null) return "—";
@@ -28,7 +31,8 @@ export default function MarketStatsBar({
   market: Market | undefined;
 }) {
   const ticker = useMarketTicker(market?.id);
-  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
+  const { connected, disconnect } = useWallet();
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
 
   const pctChange = Number(ticker?.price_change_pct_24h || 0);
   const isPositive = pctChange >= 0;
@@ -106,44 +110,25 @@ export default function MarketStatsBar({
         </div>
       )}
 
-      {/* Auth */}
-      <div className="flex items-center gap-2 md:gap-3 ml-auto shrink-0">
-        {authLoading ? (
-          <span className="text-xs text-muted">...</span>
-        ) : user ? (
-          <>
-            <div className="flex items-center gap-2">
-              {user.user_metadata?.avatar_url ? (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt=""
-                  className="w-6 h-6 rounded-full"
-                />
-              ) : (
-                <User className="w-4 h-4 text-muted" />
-              )}
-              <span className="text-xs text-foreground max-w-[120px] truncate">
-                {user.user_metadata?.full_name || user.email}
-              </span>
-            </div>
-            <button
-              onClick={signOut}
-              className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign out
-            </button>
-          </>
+      {/* Auth CTA consistency — wallet connect is the global standard across all pages */}
+      <div className="flex items-center ml-auto shrink-0">
+        {connected ? (
+          <ProfileDropdown onDisconnect={disconnect} />
         ) : (
           <button
-            onClick={() => signInWithGoogle()}
-            className="flex items-center gap-2 bg-surface border border-border rounded px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card hover:border-primary transition-colors"
+            onClick={() => setWalletModalOpen(true)}
+            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors"
           >
-            <LogIn className="w-3.5 h-3.5" />
-            Sign in with Google
+            <Wallet className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Connect Wallet</span>
           </button>
         )}
       </div>
+
+      <ConnectWalletModal
+        open={walletModalOpen}
+        onClose={() => setWalletModalOpen(false)}
+      />
     </header>
   );
 }
