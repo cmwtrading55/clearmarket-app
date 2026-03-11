@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useMarkets, useTradeSimulator } from "@/lib/hooks";
 import MarketStatsBar from "@/components/MarketStatsBar";
@@ -11,9 +11,13 @@ import OrderForm from "@/components/OrderForm";
 import TradeHistory from "@/components/TradeHistory";
 import PositionsTable from "@/components/PositionsTable";
 import MobileMarketBar from "@/components/MobileMarketBar";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+
+const LOAD_TIMEOUT_MS = 15_000;
 
 export default function TradePage({ marketSymbol }: { marketSymbol: string }) {
   const { markets, loading } = useMarkets();
+  const [timedOut, setTimedOut] = useState(false);
 
   const currentMarket = useMemo(
     () => markets.find((m) => m.symbol === marketSymbol),
@@ -22,40 +26,70 @@ export default function TradePage({ marketSymbol }: { marketSymbol: string }) {
 
   useTradeSimulator(currentMarket?.id);
 
-  if (loading) {
+  // Timeout: if still loading after 15s, show error state
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  if (loading && timedOut) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background text-muted text-sm">
-        Loading exchange...
+      <div className="flex flex-col items-center justify-center h-dvh bg-background gap-4 px-4">
+        <div className="w-14 h-14 rounded-full bg-sell/10 flex items-center justify-center">
+          <AlertTriangle className="w-7 h-7 text-sell" />
+        </div>
+        <h2 className="text-lg font-bold text-foreground">Connection Failed</h2>
+        <p className="text-sm text-muted text-center max-w-sm">
+          Unable to connect to the exchange. The data service may be temporarily
+          unavailable.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+          <Link
+            href="/"
+            className="text-sm font-medium px-4 py-2.5 rounded-lg border border-border text-foreground hover:bg-surface transition-colors"
+          >
+            Go Home
+          </Link>
+        </div>
       </div>
     );
   }
 
-  /*
-   * QA CHECKLIST — Mobile responsive trade layout
-   * Test:
-   *  - 390px width (iPhone 14)
-   *  - 360px width (Android small)
-   *  - Landscape mode
-   *  - Chart resize correctness (ResizeObserver, no zero-dim)
-   *  - No horizontal overflow at any breakpoint
-   *  - Desktop layout pixel-identical (md+ unchanged)
-   */
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-dvh bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+          <span className="text-sm text-muted">Connecting to exchange...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-dvh bg-background overflow-hidden" role="main" aria-label="Exchange">
       <MarketStatsBar market={currentMarket} />
 
-      {/* Mobile: vertical scroll stack | Desktop: 3-col grid (unchanged) */}
+      {/* Mobile: vertical scroll stack | Desktop: 3-col grid */}
       <div className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden md:grid md:grid-cols-[220px_minmax(0,1fr)_320px] min-h-0 min-w-0">
 
         {/* MarketSelector: hidden on mobile, full sidebar on desktop */}
-        <div className="hidden md:flex md:flex-col md:h-full">
+        <nav className="hidden md:flex md:flex-col md:h-full" aria-label="Market pairs">
           <MarketSelector activeMarket={marketSymbol} />
-        </div>
+        </nav>
 
         {/* Mobile: horizontal market scroller */}
-        <div className="md:hidden overflow-x-auto border-b border-border shrink-0">
+        <nav className="md:hidden overflow-x-auto border-b border-border shrink-0" aria-label="Market pairs">
           <MobileMarketBar activeMarket={marketSymbol} />
-        </div>
+        </nav>
 
         {/* Chart + OrderBook column */}
         <div className="flex flex-col min-h-0 min-w-0 overflow-hidden md:border-r md:border-border">
@@ -63,20 +97,22 @@ export default function TradePage({ marketSymbol }: { marketSymbol: string }) {
           <div className="h-[45vh] min-h-[320px] max-h-[520px] md:h-auto md:min-h-0 md:max-h-none md:flex-[6] shrink-0 md:shrink min-w-0 overflow-hidden border-b border-border">
             <TradingChart marketId={currentMarket?.id} />
           </div>
-          <div className="h-[300px] md:h-auto md:flex-[4] min-h-0 overflow-hidden">
+          <section className="h-[300px] md:h-auto md:flex-[4] min-h-0 overflow-hidden" aria-label="Order book">
             <OrderBook marketId={currentMarket?.id} />
-          </div>
+          </section>
         </div>
 
         {/* Right panel: full-width stack on mobile, fixed col on desktop */}
         <div className="flex flex-col min-h-0 w-full md:w-auto">
-          <OrderForm market={currentMarket} />
-          <div className="h-[260px] md:h-auto md:flex-1 min-h-0 border-b border-border">
+          <section aria-label="Place order">
+            <OrderForm market={currentMarket} />
+          </section>
+          <section className="h-[260px] md:h-auto md:flex-1 min-h-0 border-b border-border" aria-label="Recent trades">
             <TradeHistory marketId={currentMarket?.id} />
-          </div>
-          <div className="h-[200px] shrink-0">
+          </section>
+          <section className="h-[200px] shrink-0" aria-label="Positions and orders">
             <PositionsTable market={currentMarket} />
-          </div>
+          </section>
         </div>
       </div>
     </div>

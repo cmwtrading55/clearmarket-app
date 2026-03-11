@@ -1,12 +1,12 @@
-import { supabase } from "@/lib/supabase";
 import LaunchpadDetail from "./LaunchpadDetail";
 
+/**
+ * Launchpad detail is fully client-rendered (fetches via useEffect).
+ * We provide a placeholder param so the static export generates the shell page;
+ * any real ID is resolved client-side.
+ */
 export async function generateStaticParams() {
-  const { data } = await supabase
-    .from("launchpad_listings")
-    .select("id");
-
-  return (data || []).map((row: { id: string }) => ({ id: row.id }));
+  return [{ id: "placeholder" }];
 }
 
 export default async function LaunchpadDetailPage({

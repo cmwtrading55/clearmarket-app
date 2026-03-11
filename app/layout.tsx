@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "ClearMarket Labs",
   description:
     "Tokenised crop markets for cannabis supply chains — bonding curves, settlement rails, and grower infrastructure by ClearMarket Labs",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

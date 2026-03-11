@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { mockActivity } from "@/data/mockActivity";
+import { TrendingUp, TrendingDown, DollarSign, Sprout, CheckCircle } from "lucide-react";
 
 interface RecentTrade {
   id: string;
@@ -116,38 +117,76 @@ export default function ActivityFeed() {
           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
         </span>
       </div>
-      <div className="space-y-3">
-        {trades.length === 0 && (
-          <p className="text-xs text-muted text-center py-4">Loading activity...</p>
-        )}
-        {trades.map((trade) => {
-          const isBuy = trade.is_maker_buy;
-          const Icon = isBuy ? TrendingUp : TrendingDown;
-          const color = isBuy ? "text-buy" : "text-sell";
-          const label = isBuy ? "bought" : "sold";
+      <div className="space-y-3" role="feed" aria-label="Recent activity">
+        {trades.length > 0 ? (
+          trades.map((trade) => {
+            const isBuy = trade.is_maker_buy;
+            const Icon = isBuy ? TrendingUp : TrendingDown;
+            const color = isBuy ? "text-buy" : "text-sell";
+            const label = isBuy ? "bought" : "sold";
 
-          return (
-            <div key={trade.id} className="flex items-start gap-3">
-              <div className={`mt-0.5 ${color}`}>
-                <Icon size={16} />
+            return (
+              <div key={trade.id} className="flex items-start gap-3" role="article">
+                <div className={`mt-0.5 ${color}`}>
+                  <Icon size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-foreground truncate">
+                    <span className="text-muted">{shortenId(trade.id)}</span>{" "}
+                    <span className={color}>{label}</span>{" "}
+                    <span className="font-mono">
+                      {trade.quantity.toLocaleString()} tokens
+                    </span>{" "}
+                    <span className="text-muted">@</span>{" "}
+                    <span className="font-mono">${trade.price.toFixed(4)}</span>
+                  </p>
+                  <p className="text-xs text-muted">
+                    {trade.market_symbol} &middot; {timeAgo(trade.executed_at)}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-foreground truncate">
-                  <span className="text-muted">{shortenId(trade.id)}</span>{" "}
-                  <span className={color}>{label}</span>{" "}
-                  <span className="font-mono">
-                    {trade.quantity.toLocaleString()} tokens
-                  </span>{" "}
-                  <span className="text-muted">@</span>{" "}
-                  <span className="font-mono">${trade.price.toFixed(4)}</span>
-                </p>
-                <p className="text-xs text-muted">
-                  {trade.market_symbol} &middot; {timeAgo(trade.executed_at)}
-                </p>
+            );
+          })
+        ) : (
+          mockActivity.slice(0, 8).map((event) => {
+            const iconMap = {
+              buy: { Icon: TrendingUp, color: "text-buy", label: "bought" },
+              sell: { Icon: TrendingDown, color: "text-sell", label: "sold" },
+              fund: { Icon: DollarSign, color: "text-primary", label: "funded" },
+              harvest: { Icon: Sprout, color: "text-warning", label: "harvested" },
+              settle: { Icon: CheckCircle, color: "text-primary", label: "settled" },
+            };
+            const { Icon, color, label } = iconMap[event.type];
+
+            return (
+              <div key={event.id} className="flex items-start gap-3" role="article">
+                <div className={`mt-0.5 ${color}`}>
+                  <Icon size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-foreground truncate">
+                    <span className="text-muted">{event.user}</span>{" "}
+                    <span className={color}>{label}</span>{" "}
+                    {event.amount > 0 && (
+                      <>
+                        <span className="font-mono">
+                          {event.type === "fund"
+                            ? `$${event.amount.toLocaleString()}`
+                            : `${event.amount.toLocaleString()} tokens`}
+                        </span>{" "}
+                      </>
+                    )}
+                    <span className="text-muted">of</span>{" "}
+                    <span className="font-medium">{event.strain}</span>
+                  </p>
+                  <p className="text-xs text-muted">
+                    {timeAgo(event.timestamp)}
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

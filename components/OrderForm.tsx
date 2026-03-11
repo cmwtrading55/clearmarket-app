@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMarketTicker, useMockWallet } from "@/lib/hooks";
 import { useAuth } from "@/lib/auth";
 import type { Market } from "@/lib/types";
 import { mockTxSignature, shortenAddress, solscanTxUrl } from "@/lib/solana";
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sealcisjhqlrpmuescsu.supabase.co";
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlYWxjaXNqaHFscnBtdWVzY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDUwNDYsImV4cCI6MjA4NjQ4MTA0Nn0.P_hNdWsn1O7wz4j25-ji1dQ_lJwviWgG5NXF6LcObiA";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/config";
 
 export default function OrderForm({ market }: { market: Market | undefined }) {
   const ticker = useMarketTicker(market?.id);
@@ -20,6 +18,7 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; txSig?: string } | null>(null);
+  const lastSubmitRef = useRef(0);
 
   const quoteWallet = wallets.find(
     (w) => w.asset_id === market?.quote_asset_id
@@ -51,12 +50,17 @@ export default function OrderForm({ market }: { market: Market | undefined }) {
     if (!market || amountNum <= 0) return;
     if (orderType === "limit" && priceNum <= 0) return;
 
+    // Debounce: prevent double-submit within 1s
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 1000) return;
+    lastSubmitRef.current = now;
+
     setSubmitting(true);
 
     try {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${ANON_KEY}`,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       };
       // If user is authenticated, pass their session token instead
       if (user) {

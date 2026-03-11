@@ -22,10 +22,10 @@ export default function OrderBook({ marketId }: { marketId: string | undefined }
   );
 
   return (
-    <div className="flex flex-col h-full bg-card">
+    <div className="flex flex-col h-full bg-card" role="region" aria-label="Order book">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <h3 className="text-xs font-bold text-muted uppercase tracking-wider">
+        <h3 className="text-xs font-bold text-muted uppercase tracking-wider" id="orderbook-heading">
           Order Book
         </h3>
         <span className="text-[10px] text-muted">
@@ -46,7 +46,7 @@ export default function OrderBook({ marketId }: { marketId: string | undefined }
         {[...book.asks].reverse().map((level, i) => {
           const pct = maxTotal > 0 ? (level.total / maxTotal) * 100 : 0;
           return (
-            <div key={`ask-${i}`} className="relative grid grid-cols-3 gap-2 px-3 py-0.5 text-xs">
+            <div key={`ask-${level.price}`} className="relative grid grid-cols-3 gap-2 px-3 py-0.5 text-xs">
               <div
                 className="absolute inset-0 bg-sell/10"
                 style={{ width: `${pct}%`, right: 0, left: "auto" }}
@@ -77,7 +77,7 @@ export default function OrderBook({ marketId }: { marketId: string | undefined }
         {book.bids.map((level, i) => {
           const pct = maxTotal > 0 ? (level.total / maxTotal) * 100 : 0;
           return (
-            <div key={`bid-${i}`} className="relative grid grid-cols-3 gap-2 px-3 py-0.5 text-xs">
+            <div key={`bid-${level.price}`} className="relative grid grid-cols-3 gap-2 px-3 py-0.5 text-xs">
               <div
                 className="absolute inset-0 bg-buy/10"
                 style={{ width: `${pct}%`, right: 0, left: "auto" }}

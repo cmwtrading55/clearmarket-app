@@ -15,9 +15,7 @@ import type {
   OrderBookLevel,
 } from "./types";
 import { MOCK_USER_ID } from "./constants";
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://sealcisjhqlrpmuescsu.supabase.co";
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlYWxjaXNqaHFscnBtdWVzY3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDUwNDYsImV4cCI6MjA4NjQ4MTA0Nn0.P_hNdWsn1O7wz4j25-ji1dQ_lJwviWgG5NXF6LcObiA";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, TRADE_SIMULATOR_INTERVAL_MS } from "./config";
 
 export function useTradeSimulator(marketId: string | undefined) {
   const tickRef = useRef(0);
@@ -32,7 +30,7 @@ export function useTradeSimulator(marketId: string | undefined) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${ANON_KEY}`,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
             market_id: marketId,
@@ -42,7 +40,7 @@ export function useTradeSimulator(marketId: string | undefined) {
       } catch {
         // silent fail — simulator is best-effort
       }
-    }, 300);
+    }, TRADE_SIMULATOR_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [marketId]);
@@ -301,7 +299,7 @@ export function useCandles(marketId: string | undefined, interval: string) {
 
   useEffect(() => {
     if (!marketId) return;
-    setLoading(true);
+    let cancelled = false;
 
     async function fetchCandles() {
       const { data } = await supabase
@@ -312,6 +310,7 @@ export function useCandles(marketId: string | undefined, interval: string) {
         .order("open_time", { ascending: true })
         .limit(720);
 
+      if (cancelled) return;
       if (data) setCandles(data as MarketCandle[]);
       setLoading(false);
     }
@@ -346,6 +345,7 @@ export function useCandles(marketId: string | undefined, interval: string) {
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
   }, [marketId, interval]);
