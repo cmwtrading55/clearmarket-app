@@ -48,7 +48,7 @@ export default function LaunchpadCard({ listing }: Props) {
       <div className="relative h-36 overflow-hidden">
         <img
           src={heroImg}
-          alt={displayName}
+          alt={displayName || "Crop listing"}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 flex gap-2">

@@ -184,28 +184,21 @@ export async function depositToEscrow(
   if (error || !deposit) return null;
 
   // Update escrow totals
-  await supabase.rpc("increment_escrow_totals", {
-    p_escrow_id: escrowId,
-    p_amount: amount,
-  }).then(() => {
-    // Fallback if RPC doesn't exist: manual update
-  }).catch(async () => {
-    const { data: current } = await supabase
-      .from("escrow_accounts")
-      .select("total_deposited")
-      .eq("id", escrowId)
-      .single();
+  const { data: currentEscrow } = await supabase
+    .from("escrow_accounts")
+    .select("total_deposited")
+    .eq("id", escrowId)
+    .single();
 
-    if (current) {
-      await supabase
-        .from("escrow_accounts")
-        .update({
-          total_deposited: Number(current.total_deposited) + amount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", escrowId);
-    }
-  });
+  if (currentEscrow) {
+    await supabase
+      .from("escrow_accounts")
+      .update({
+        total_deposited: Number(currentEscrow.total_deposited) + amount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", escrowId);
+  }
 
   // Update listing funding_raised and investor_count
   const { data: escrow } = await supabase

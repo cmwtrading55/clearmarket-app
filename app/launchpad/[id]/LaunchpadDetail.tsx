@@ -121,7 +121,7 @@ export default function LaunchpadDetail({ id }: { id: string }) {
             <div className="relative rounded-xl overflow-hidden h-52 sm:h-64">
               <img
                 src={heroImg}
-                alt={displayName}
+                alt={displayName || "Crop listing"}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 left-4 flex gap-2">

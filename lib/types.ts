@@ -211,8 +211,8 @@ export interface LaunchpadListing {
   insurance_coverage: boolean;
   contracted_buyer: boolean;
   contracted_buyer_name: string | null;
-  // Cannabis-specific fields
-  strain: string;
+  // Cannabis-specific fields (null for soybean listings)
+  strain: string | null;
   yield_kg: number | null;
   thc_percent: number | null;
   cbd_percent: number | null;
