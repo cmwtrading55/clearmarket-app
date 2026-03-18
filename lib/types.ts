@@ -187,34 +187,52 @@ export interface Payout {
 
 // Launchpad types
 
+export type CommodityType = "cannabis" | "soybeans";
+
 export type LaunchpadStatus = "draft" | "pending_review" | "approved" | "rejected" | "funding";
 
 export interface LaunchpadListing {
   id: string;
+  commodity_type: CommodityType;
   grower_wallet: string;
   grower_name: string | null;
   grower_location: string | null;
   grower_type: "indoor" | "outdoor" | "greenhouse" | null;
-  strain: string;
+  // Shared fields
   description: string | null;
   hero_image: string | null;
   region: string | null;
+  harvest_date: string | null;
+  funding_target: number | null;
+  funding_raised: number;
+  investor_count: number;
+  price_per_token: number | null;
+  token_symbol: string | null;
+  insurance_coverage: boolean;
+  contracted_buyer: boolean;
+  contracted_buyer_name: string | null;
+  // Cannabis-specific fields
+  strain: string;
   yield_kg: number | null;
   thc_percent: number | null;
   cbd_percent: number | null;
-  harvest_date: string | null;
-  funding_target: number | null;
-  price_per_token: number | null;
-  token_symbol: string | null;
   grow_method: string | null;
   lighting: string | null;
   nutrients: string | null;
   facility_certification: string | null;
   lab_testing_provider: string | null;
   expected_terpene_profile: string | null;
-  insurance_coverage: boolean;
-  contracted_buyer: boolean;
-  contracted_buyer_name: string | null;
+  // Soybean-specific fields
+  variety: string | null;
+  yield_tonnes: number | null;
+  protein_content: number | null;
+  moisture_percent: number | null;
+  oil_content: number | null;
+  usda_grade: string | null;
+  storage_facility: string | null;
+  delivery_terms: string | null;
+  farm_certification: string | null;
+  // Oracle scores
   completeness_score: number;
   history_score: number;
   oracle_discount_pct: number;

@@ -7,30 +7,63 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// --- Oracle logic (server-side mirror of lib/oracle.ts) ---
+// --- Commodity-agnostic oracle scoring engine ---
 
-const FIVE_PT_FIELDS = [
-  "strain",
-  "description",
-  "hero_image",
-  "region",
-  "yield_kg",
-  "harvest_date",
-  "funding_target",
-  "price_per_token",
-  "thc_percent",
-  "cbd_percent",
-  "grow_method",
-  "lighting",
-  "nutrients",
-  "facility_certification",
-  "lab_testing_provider",
-  "expected_terpene_profile",
-  "token_symbol",
-  "grower_location",
+type CommodityType = "cannabis" | "soybeans";
+
+interface ScoringField {
+  key: string;
+  points: number;
+}
+
+const CANNABIS_FIELDS: ScoringField[] = [
+  { key: "strain", points: 5 },
+  { key: "description", points: 5 },
+  { key: "hero_image", points: 5 },
+  { key: "region", points: 5 },
+  { key: "yield_kg", points: 5 },
+  { key: "harvest_date", points: 5 },
+  { key: "funding_target", points: 5 },
+  { key: "price_per_token", points: 5 },
+  { key: "thc_percent", points: 5 },
+  { key: "cbd_percent", points: 5 },
+  { key: "grow_method", points: 5 },
+  { key: "lighting", points: 5 },
+  { key: "nutrients", points: 5 },
+  { key: "facility_certification", points: 5 },
+  { key: "lab_testing_provider", points: 5 },
+  { key: "expected_terpene_profile", points: 5 },
+  { key: "token_symbol", points: 5 },
+  { key: "grower_location", points: 5 },
+  { key: "insurance_coverage", points: 10 },
 ];
 
-const TEN_PT_FIELDS = ["insurance_coverage"];
+const SOYBEANS_FIELDS: ScoringField[] = [
+  { key: "variety", points: 5 },
+  { key: "description", points: 5 },
+  { key: "hero_image", points: 5 },
+  { key: "region", points: 5 },
+  { key: "yield_tonnes", points: 5 },
+  { key: "harvest_date", points: 5 },
+  { key: "funding_target", points: 5 },
+  { key: "price_per_token", points: 5 },
+  { key: "protein_content", points: 5 },
+  { key: "moisture_percent", points: 5 },
+  { key: "oil_content", points: 5 },
+  { key: "usda_grade", points: 5 },
+  { key: "storage_facility", points: 5 },
+  { key: "delivery_terms", points: 5 },
+  { key: "farm_certification", points: 5 },
+  { key: "token_symbol", points: 5 },
+  { key: "grower_location", points: 5 },
+  { key: "grower_name", points: 5 },
+  { key: "insurance_coverage", points: 10 },
+];
+
+const SCORING_FIELDS: Record<CommodityType, ScoringField[]> = {
+  cannabis: CANNABIS_FIELDS,
+  soybeans: SOYBEANS_FIELDS,
+};
 
 function hasValue(v: unknown): boolean {
   if (v === null || v === undefined || v === "") return false;
@@ -39,13 +72,11 @@ function hasValue(v: unknown): boolean {
   return true;
 }
 
-function calcCompleteness(data: Record<string, unknown>): number {
+function calcCompleteness(data: Record<string, unknown>, commodityType: CommodityType): number {
+  const fields = SCORING_FIELDS[commodityType] || SCORING_FIELDS.cannabis;
   let score = 0;
-  for (const f of FIVE_PT_FIELDS) {
-    if (hasValue(data[f])) score += 5;
-  }
-  for (const f of TEN_PT_FIELDS) {
-    if (hasValue(data[f])) score += 10;
+  for (const f of fields) {
+    if (hasValue(data[f.key])) score += f.points;
   }
   return Math.min(score, 100);
 }
@@ -67,9 +98,10 @@ interface OracleResult {
 
 function calcOracle(
   data: Record<string, unknown>,
-  historyScore: number
+  historyScore: number,
+  commodityType: CommodityType
 ): OracleResult {
-  const completeness = calcCompleteness(data);
+  const completeness = calcCompleteness(data, commodityType);
   const buyerBonus = calcBuyerBonus(data);
   const composite = completeness * 0.4 + buyerBonus * 0.8 + historyScore * 0.4;
   const capped = Math.min(composite, 100);
@@ -98,16 +130,25 @@ Deno.serve(async (req) => {
     );
 
     const body = await req.json();
+    const commodityType: CommodityType = body.commodity_type || "cannabis";
 
-    if (!body.strain || !body.grower_wallet) {
+    // Validate required fields per commodity
+    if (commodityType === "cannabis" && !body.strain) {
       return new Response(
-        JSON.stringify({
-          error: "Missing required fields: strain, grower_wallet",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Missing required field: strain" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (commodityType === "soybeans" && !body.variety) {
+      return new Response(
+        JSON.stringify({ error: "Missing required field: variety" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!body.grower_wallet) {
+      return new Response(
+        JSON.stringify({ error: "Missing required field: grower_wallet" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -127,33 +168,49 @@ Deno.serve(async (req) => {
       historyScore = Math.min(Math.min(settled * 20, 60) + Math.min(listed * 10, 40), 100);
     }
 
-    const oracle = calcOracle(body, historyScore);
+    const oracle = calcOracle(body, historyScore, commodityType);
 
-    const row = {
+    const row: Record<string, unknown> = {
+      commodity_type: commodityType,
       grower_wallet: body.grower_wallet,
       grower_name: body.grower_name || null,
       grower_location: body.grower_location || null,
       grower_type: body.grower_type || null,
-      strain: body.strain,
+      // Shared
       description: body.description || null,
       hero_image: body.hero_image || null,
       region: body.region || null,
+      harvest_date: body.harvest_date || null,
+      funding_target: body.funding_target || null,
+      funding_raised: 0,
+      investor_count: 0,
+      price_per_token: body.price_per_token || null,
+      token_symbol: body.token_symbol || null,
+      insurance_coverage: body.insurance_coverage || false,
+      contracted_buyer: body.contracted_buyer || false,
+      contracted_buyer_name: body.contracted_buyer_name || null,
+      // Cannabis-specific
+      strain: body.strain || null,
       yield_kg: body.yield_kg || null,
       thc_percent: body.thc_percent || null,
       cbd_percent: body.cbd_percent || null,
-      harvest_date: body.harvest_date || null,
-      funding_target: body.funding_target || null,
-      price_per_token: body.price_per_token || null,
-      token_symbol: body.token_symbol || null,
       grow_method: body.grow_method || null,
       lighting: body.lighting || null,
       nutrients: body.nutrients || null,
       facility_certification: body.facility_certification || null,
       lab_testing_provider: body.lab_testing_provider || null,
       expected_terpene_profile: body.expected_terpene_profile || null,
-      insurance_coverage: body.insurance_coverage || false,
-      contracted_buyer: body.contracted_buyer || false,
-      contracted_buyer_name: body.contracted_buyer_name || null,
+      // Soybean-specific
+      variety: body.variety || null,
+      yield_tonnes: body.yield_tonnes || null,
+      protein_content: body.protein_content || null,
+      moisture_percent: body.moisture_percent || null,
+      oil_content: body.oil_content || null,
+      usda_grade: body.usda_grade || null,
+      storage_facility: body.storage_facility || null,
+      delivery_terms: body.delivery_terms || null,
+      farm_certification: body.farm_certification || null,
+      // Oracle scores
       completeness_score: oracle.completeness,
       history_score: oracle.historyScore,
       oracle_discount_pct: oracle.discount,

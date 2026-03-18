@@ -2,16 +2,17 @@
 
 import { Check } from "lucide-react";
 
-const STEPS = ["Grower Info", "Crop Details", "Financials", "Review"];
+const DEFAULT_STEPS = ["Grower Info", "Crop Details", "Financials", "Review"];
 
 interface Props {
   current: number;
+  steps?: string[];
 }
 
-export default function StepIndicator({ current }: Props) {
+export default function StepIndicator({ current, steps = DEFAULT_STEPS }: Props) {
   return (
     <div className="flex items-center gap-2 w-full">
-      {STEPS.map((label, i) => {
+      {steps.map((label, i) => {
         const done = i < current;
         const active = i === current;
         return (
@@ -36,7 +37,7 @@ export default function StepIndicator({ current }: Props) {
                 {label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div
                 className={`flex-1 h-px ${
                   done ? "bg-primary" : "bg-border"

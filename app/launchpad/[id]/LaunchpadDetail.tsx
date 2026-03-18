@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { LaunchpadListing } from "@/lib/types";
 import OracleScorePanel from "@/components/launchpad/OracleScorePanel";
+import InvestModal from "@/components/launchpad/InvestModal";
 import {
   ArrowLeft,
   MapPin,
@@ -14,6 +15,9 @@ import {
   Shield,
   Loader2,
   ExternalLink,
+  Wheat,
+  Droplets,
+  Package,
 } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -24,9 +28,15 @@ const STATUS_STYLES: Record<string, string> = {
   funding: "bg-blue-500/10 text-blue-400",
 };
 
+const DEFAULT_IMAGES: Record<string, string> = {
+  cannabis: "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=800&q=80",
+  soybeans: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&q=80",
+};
+
 export default function LaunchpadDetail({ id }: { id: string }) {
   const [listing, setListing] = useState<LaunchpadListing | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showInvest, setShowInvest] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -62,6 +72,9 @@ export default function LaunchpadDetail({ id }: { id: string }) {
     );
   }
 
+  const commodity = listing.commodity_type || "cannabis";
+  const displayName = commodity === "soybeans" ? (listing.variety || listing.strain) : listing.strain;
+
   const oracle = {
     completeness: listing.completeness_score,
     buyerBonus: listing.contracted_buyer
@@ -81,11 +94,14 @@ export default function LaunchpadDetail({ id }: { id: string }) {
       listing.history_score * 0.4,
     discount: listing.oracle_discount_pct,
     riskGrade: listing.risk_grade,
+    commodityType: commodity,
   };
 
-  const heroImg =
-    listing.hero_image ||
-    "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=800&q=80";
+  const heroImg = listing.hero_image || DEFAULT_IMAGES[commodity] || DEFAULT_IMAGES.cannabis;
+
+  const fundingPct = listing.funding_target && listing.funding_target > 0
+    ? Math.min(((listing.funding_raised || 0) / listing.funding_target) * 100, 100)
+    : 0;
 
   return (
     <main className="min-h-screen bg-background">
@@ -105,7 +121,7 @@ export default function LaunchpadDetail({ id }: { id: string }) {
             <div className="relative rounded-xl overflow-hidden h-52 sm:h-64">
               <img
                 src={heroImg}
-                alt={listing.strain}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 left-4 flex gap-2">
@@ -116,13 +132,17 @@ export default function LaunchpadDetail({ id }: { id: string }) {
                 >
                   {listing.status.replace("_", " ")}
                 </span>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-background/60 backdrop-blur-sm text-foreground capitalize flex items-center gap-1">
+                  {commodity === "soybeans" ? <Wheat size={12} /> : <Leaf size={12} />}
+                  {commodity}
+                </span>
               </div>
             </div>
 
             {/* Title + meta */}
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {listing.strain}
+                {displayName}
               </h1>
               <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-muted">
                 <span className="flex items-center gap-1">
@@ -142,6 +162,25 @@ export default function LaunchpadDetail({ id }: { id: string }) {
               </div>
             </div>
 
+            {/* Funding progress */}
+            {listing.funding_target && listing.funding_target > 0 && (
+              <div className="bg-card-bg border border-border rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted">{listing.investor_count || 0} investors</span>
+                  <span className="font-mono text-foreground font-medium">
+                    ${((listing.funding_raised || 0) / 1000).toFixed(1)}k / ${(listing.funding_target / 1000).toFixed(0)}k raised
+                  </span>
+                </div>
+                <div className="h-2 bg-border rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-400 rounded-full transition-all"
+                    style={{ width: `${fundingPct}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted">{fundingPct.toFixed(1)}% funded</p>
+              </div>
+            )}
+
             {/* Description */}
             {listing.description && (
               <p className="text-sm text-muted leading-relaxed">
@@ -151,30 +190,44 @@ export default function LaunchpadDetail({ id }: { id: string }) {
 
             {/* Key metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <MetricCard
-                icon={<Leaf size={14} />}
-                label="THC / CBD"
-                value={`${listing.thc_percent ?? "–"}% / ${
-                  listing.cbd_percent ?? "–"
-                }%`}
-              />
-              <MetricCard
-                icon={<FlaskConical size={14} />}
-                label="Yield"
-                value={
-                  listing.yield_kg
-                    ? `${Number(listing.yield_kg).toLocaleString()} kg`
-                    : "—"
-                }
-              />
+              {commodity === "cannabis" ? (
+                <>
+                  <MetricCard
+                    icon={<Leaf size={14} />}
+                    label="THC / CBD"
+                    value={`${listing.thc_percent ?? "–"}% / ${listing.cbd_percent ?? "–"}%`}
+                  />
+                  <MetricCard
+                    icon={<FlaskConical size={14} />}
+                    label="Yield"
+                    value={listing.yield_kg ? `${Number(listing.yield_kg).toLocaleString()} kg` : "—"}
+                  />
+                </>
+              ) : (
+                <>
+                  <MetricCard
+                    icon={<Wheat size={14} />}
+                    label="Protein / Oil"
+                    value={`${listing.protein_content ?? "–"}% / ${listing.oil_content ?? "–"}%`}
+                  />
+                  <MetricCard
+                    icon={<Droplets size={14} />}
+                    label="Moisture"
+                    value={listing.moisture_percent ? `${listing.moisture_percent}%` : "—"}
+                  />
+                  <MetricCard
+                    icon={<Package size={14} />}
+                    label="Yield"
+                    value={listing.yield_tonnes ? `${Number(listing.yield_tonnes).toLocaleString()} t` : "—"}
+                  />
+                </>
+              )}
               <MetricCard
                 icon={<Shield size={14} />}
                 label="Token"
                 value={
                   listing.token_symbol
-                    ? `${listing.token_symbol} @ $${
-                        Number(listing.price_per_token)?.toFixed(2) || "—"
-                      }`
+                    ? `${listing.token_symbol} @ $${Number(listing.price_per_token)?.toFixed(2) || "—"}`
                     : "—"
                 }
               />
@@ -184,50 +237,34 @@ export default function LaunchpadDetail({ id }: { id: string }) {
             <div className="bg-card-bg border border-border rounded-xl divide-y divide-border">
               <DetailRow
                 label="Funding Target"
-                value={
-                  listing.funding_target
-                    ? `$${Number(listing.funding_target).toLocaleString()}`
-                    : null
-                }
+                value={listing.funding_target ? `$${Number(listing.funding_target).toLocaleString()}` : null}
               />
-              <DetailRow label="Grow Method" value={listing.grow_method} />
-              <DetailRow label="Lighting" value={listing.lighting} />
-              <DetailRow label="Nutrients" value={listing.nutrients} />
-              <DetailRow
-                label="Facility Cert"
-                value={listing.facility_certification}
-              />
-              <DetailRow
-                label="Lab Testing"
-                value={listing.lab_testing_provider}
-              />
-              <DetailRow
-                label="Terpene Profile"
-                value={listing.expected_terpene_profile}
-              />
-              <DetailRow
-                label="Insurance"
-                value={listing.insurance_coverage ? "Covered" : "None"}
-              />
+              {commodity === "cannabis" ? (
+                <>
+                  <DetailRow label="Grow Method" value={listing.grow_method} />
+                  <DetailRow label="Lighting" value={listing.lighting} />
+                  <DetailRow label="Nutrients" value={listing.nutrients} />
+                  <DetailRow label="Facility Cert" value={listing.facility_certification} />
+                  <DetailRow label="Lab Testing" value={listing.lab_testing_provider} />
+                  <DetailRow label="Terpene Profile" value={listing.expected_terpene_profile} />
+                </>
+              ) : (
+                <>
+                  <DetailRow label="USDA Grade" value={listing.usda_grade} />
+                  <DetailRow label="Storage Facility" value={listing.storage_facility} />
+                  <DetailRow label="Delivery Terms" value={listing.delivery_terms} />
+                  <DetailRow label="Farm Certification" value={listing.farm_certification} />
+                </>
+              )}
+              <DetailRow label="Insurance" value={listing.insurance_coverage ? "Covered" : "None"} />
               <DetailRow
                 label="Contracted Buyer"
-                value={
-                  listing.contracted_buyer
-                    ? listing.contracted_buyer_name || "Yes (unnamed)"
-                    : "None"
-                }
+                value={listing.contracted_buyer ? listing.contracted_buyer_name || "Yes (unnamed)" : "None"}
               />
               <DetailRow label="Grower Type" value={listing.grower_type} />
               <DetailRow
                 label="Wallet"
-                value={
-                  listing.grower_wallet
-                    ? `${listing.grower_wallet.slice(
-                        0,
-                        6
-                      )}...${listing.grower_wallet.slice(-4)}`
-                    : null
-                }
+                value={listing.grower_wallet ? `${listing.grower_wallet.slice(0, 6)}...${listing.grower_wallet.slice(-4)}` : null}
               />
             </div>
           </div>
@@ -237,9 +274,11 @@ export default function LaunchpadDetail({ id }: { id: string }) {
             <div className="lg:sticky lg:top-20 space-y-4">
               <OracleScorePanel oracle={oracle} />
 
-              {(listing.status === "funding" ||
-                listing.status === "approved") && (
-                <button className="w-full flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-3 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors">
+              {(listing.status === "funding" || listing.status === "approved") && (
+                <button
+                  onClick={() => setShowInvest(true)}
+                  className="w-full flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-3 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors"
+                >
                   <ExternalLink size={14} />
                   Fund This Crop
                 </button>
@@ -248,6 +287,10 @@ export default function LaunchpadDetail({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      {showInvest && listing && (
+        <InvestModal listing={listing} onClose={() => setShowInvest(false)} />
+      )}
     </main>
   );
 }

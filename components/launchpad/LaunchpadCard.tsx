@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LaunchpadListing } from "@/lib/types";
-import { MapPin, Calendar, TrendingDown } from "lucide-react";
+import { MapPin, Calendar, TrendingDown, Leaf, Wheat } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-muted/10 text-muted",
@@ -17,14 +17,27 @@ const GRADE_STYLES: Record<string, string> = {
   D: "text-sell",
 };
 
+const COMMODITY_ICONS: Record<string, React.ReactNode> = {
+  cannabis: <Leaf size={10} />,
+  soybeans: <Wheat size={10} />,
+};
+
+const DEFAULT_IMAGES: Record<string, string> = {
+  cannabis: "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=800&q=80",
+  soybeans: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&q=80",
+};
+
 interface Props {
   listing: LaunchpadListing;
 }
 
 export default function LaunchpadCard({ listing }: Props) {
-  const heroImg =
-    listing.hero_image ||
-    "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=800&q=80";
+  const commodity = listing.commodity_type || "cannabis";
+  const heroImg = listing.hero_image || DEFAULT_IMAGES[commodity] || DEFAULT_IMAGES.cannabis;
+  const displayName = commodity === "soybeans" ? (listing.variety || listing.strain) : listing.strain;
+  const fundingPct = listing.funding_target && listing.funding_target > 0
+    ? Math.min((listing.funding_raised / listing.funding_target) * 100, 100)
+    : 0;
 
   return (
     <Link
@@ -35,7 +48,7 @@ export default function LaunchpadCard({ listing }: Props) {
       <div className="relative h-36 overflow-hidden">
         <img
           src={heroImg}
-          alt={listing.strain}
+          alt={displayName}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 flex gap-2">
@@ -54,13 +67,19 @@ export default function LaunchpadCard({ listing }: Props) {
             Grade {listing.risk_grade}
           </span>
         </div>
+        <div className="absolute top-3 right-3">
+          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-background/60 backdrop-blur-sm text-foreground capitalize">
+            {COMMODITY_ICONS[commodity]}
+            {commodity}
+          </span>
+        </div>
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground">
-            {listing.strain}
+            {displayName}
           </h3>
           <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
             <MapPin size={12} />
@@ -87,6 +106,24 @@ export default function LaunchpadCard({ listing }: Props) {
           </div>
         </div>
 
+        {/* Funding progress bar */}
+        {listing.funding_target && listing.funding_target > 0 && (
+          <div>
+            <div className="flex justify-between text-xs text-muted mb-1">
+              <span>{listing.investor_count || 0} investors</span>
+              <span className="font-mono">
+                ${((listing.funding_raised || 0) / 1000).toFixed(0)}k / ${(listing.funding_target / 1000).toFixed(0)}k
+              </span>
+            </div>
+            <div className="h-1.5 bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-400 rounded-full transition-all"
+                style={{ width: `${fundingPct}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Completeness bar */}
         <div>
           <div className="flex justify-between text-xs text-muted mb-1">
@@ -112,10 +149,8 @@ export default function LaunchpadCard({ listing }: Props) {
                 })
               : "TBD"}
           </span>
-          {listing.funding_target && (
-            <span className="font-mono">
-              ${(listing.funding_target / 1000).toFixed(0)}k target
-            </span>
+          {commodity === "soybeans" && listing.variety && (
+            <span className="font-mono text-foreground/60">{listing.variety}</span>
           )}
         </div>
       </div>

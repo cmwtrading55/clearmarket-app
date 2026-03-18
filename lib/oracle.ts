@@ -1,30 +1,91 @@
 import type { LaunchpadListing } from "@/lib/types";
 import type { Batch } from "@/lib/types";
 
-/** Fields worth 5 points each */
-const FIVE_PT_FIELDS: (keyof LaunchpadListing)[] = [
-  "strain",
-  "description",
-  "hero_image",
-  "region",
-  "yield_kg",
-  "harvest_date",
-  "funding_target",
-  "price_per_token",
-  "thc_percent",
-  "cbd_percent",
-  "grow_method",
-  "lighting",
-  "nutrients",
-  "facility_certification",
-  "lab_testing_provider",
-  "expected_terpene_profile",
-  "token_symbol",
-  "grower_location",
+// ---------------------------------------------------------------------------
+// Commodity-agnostic oracle scoring engine
+// ---------------------------------------------------------------------------
+
+export type CommodityType = "cannabis" | "soybeans";
+
+export interface ScoringField {
+  key: string;
+  points: number;
+}
+
+export interface CommodityConfig {
+  type: CommodityType;
+  label: string;
+  /** Fields scored for completeness */
+  scoringFields: ScoringField[];
+  /** Max completeness score (auto-calculated from fields, capped at 100) */
+  maxScore: number;
+}
+
+// ---------------------------------------------------------------------------
+// Per-commodity scoring definitions
+// ---------------------------------------------------------------------------
+
+const CANNABIS_FIELDS: ScoringField[] = [
+  { key: "strain", points: 5 },
+  { key: "description", points: 5 },
+  { key: "hero_image", points: 5 },
+  { key: "region", points: 5 },
+  { key: "yield_kg", points: 5 },
+  { key: "harvest_date", points: 5 },
+  { key: "funding_target", points: 5 },
+  { key: "price_per_token", points: 5 },
+  { key: "thc_percent", points: 5 },
+  { key: "cbd_percent", points: 5 },
+  { key: "grow_method", points: 5 },
+  { key: "lighting", points: 5 },
+  { key: "nutrients", points: 5 },
+  { key: "facility_certification", points: 5 },
+  { key: "lab_testing_provider", points: 5 },
+  { key: "expected_terpene_profile", points: 5 },
+  { key: "token_symbol", points: 5 },
+  { key: "grower_location", points: 5 },
+  { key: "insurance_coverage", points: 10 },
 ];
 
-/** Fields worth 10 points each */
-const TEN_PT_FIELDS: (keyof LaunchpadListing)[] = ["insurance_coverage"];
+const SOYBEANS_FIELDS: ScoringField[] = [
+  { key: "variety", points: 5 },
+  { key: "description", points: 5 },
+  { key: "hero_image", points: 5 },
+  { key: "region", points: 5 },
+  { key: "yield_tonnes", points: 5 },
+  { key: "harvest_date", points: 5 },
+  { key: "funding_target", points: 5 },
+  { key: "price_per_token", points: 5 },
+  { key: "protein_content", points: 5 },
+  { key: "moisture_percent", points: 5 },
+  { key: "oil_content", points: 5 },
+  { key: "usda_grade", points: 5 },
+  { key: "storage_facility", points: 5 },
+  { key: "delivery_terms", points: 5 },
+  { key: "farm_certification", points: 5 },
+  { key: "token_symbol", points: 5 },
+  { key: "grower_location", points: 5 },
+  { key: "grower_name", points: 5 },
+  { key: "insurance_coverage", points: 10 },
+];
+
+function buildConfig(type: CommodityType, label: string, fields: ScoringField[]): CommodityConfig {
+  return {
+    type,
+    label,
+    scoringFields: fields,
+    maxScore: Math.min(fields.reduce((s, f) => s + f.points, 0), 100),
+  };
+}
+
+export const COMMODITY_CONFIGS: Record<CommodityType, CommodityConfig> = {
+  cannabis: buildConfig("cannabis", "Cannabis", CANNABIS_FIELDS),
+  soybeans: buildConfig("soybeans", "Soybeans", SOYBEANS_FIELDS),
+};
+
+// ---------------------------------------------------------------------------
+// Scoring functions
+// ---------------------------------------------------------------------------
 
 function hasValue(v: unknown): boolean {
   if (v === null || v === undefined || v === "") return false;
@@ -33,18 +94,19 @@ function hasValue(v: unknown): boolean {
   return true;
 }
 
-export function calcCompleteness(data: Partial<LaunchpadListing>): number {
+export function calcCompleteness(
+  data: Record<string, unknown>,
+  commodityType: CommodityType = "cannabis"
+): number {
+  const config = COMMODITY_CONFIGS[commodityType];
   let score = 0;
-  for (const f of FIVE_PT_FIELDS) {
-    if (hasValue(data[f])) score += 5;
-  }
-  for (const f of TEN_PT_FIELDS) {
-    if (hasValue(data[f])) score += 10;
+  for (const field of config.scoringFields) {
+    if (hasValue(data[field.key])) score += field.points;
   }
   return Math.min(score, 100);
 }
 
-export function calcBuyerBonus(data: Partial<LaunchpadListing>): number {
+export function calcBuyerBonus(data: Record<string, unknown>): number {
   if (data.contracted_buyer && hasValue(data.contracted_buyer_name)) return 25;
   if (data.contracted_buyer) return 15;
   return 0;
@@ -74,15 +136,18 @@ export interface OracleResult {
   composite: number;
   discount: number;
   riskGrade: "A" | "B" | "C" | "D";
+  commodityType: CommodityType;
 }
 
 export function calcOracleDiscount(
-  data: Partial<LaunchpadListing>,
+  data: Partial<LaunchpadListing> & Record<string, unknown>,
   batches: Batch[] = [],
-  wallet: string = ""
+  wallet: string = "",
+  commodityType?: CommodityType
 ): OracleResult {
-  const completeness = calcCompleteness(data);
-  const buyerBonus = calcBuyerBonus(data);
+  const ct: CommodityType = commodityType ?? (data.commodity_type as CommodityType) ?? "cannabis";
+  const completeness = calcCompleteness(data as Record<string, unknown>, ct);
+  const buyerBonus = calcBuyerBonus(data as Record<string, unknown>);
   const historyScore = calcHistoryScore(wallet, batches);
 
   const composite =
@@ -96,5 +161,5 @@ export function calcOracleDiscount(
   else if (capped >= 25) riskGrade = "C";
   else riskGrade = "D";
 
-  return { completeness, buyerBonus, historyScore, composite, discount, riskGrade };
+  return { completeness, buyerBonus, historyScore, composite, discount, riskGrade, commodityType: ct };
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import type { LaunchpadListing } from "@/lib/types";
+import type { LaunchpadListing, CommodityType } from "@/lib/types";
 import LaunchpadCard from "@/components/launchpad/LaunchpadCard";
 import {
   Rocket,
@@ -11,14 +11,18 @@ import {
   BarChart3,
   Filter,
   Loader2,
+  Leaf,
+  Wheat,
 } from "lucide-react";
 
 type GradeFilter = "all" | "A" | "B" | "C" | "D";
+type CommodityFilter = "all" | CommodityType;
 
 export default function LaunchpadPage() {
   const [listings, setListings] = useState<LaunchpadListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [gradeFilter, setGradeFilter] = useState<GradeFilter>("all");
+  const [commodityFilter, setCommodityFilter] = useState<CommodityFilter>("all");
 
   useEffect(() => {
     async function load() {
@@ -33,10 +37,11 @@ export default function LaunchpadPage() {
     load();
   }, []);
 
-  const filtered =
-    gradeFilter === "all"
-      ? listings
-      : listings.filter((l) => l.risk_grade === gradeFilter);
+  const filtered = listings.filter((l) => {
+    if (gradeFilter !== "all" && l.risk_grade !== gradeFilter) return false;
+    if (commodityFilter !== "all" && (l.commodity_type || "cannabis") !== commodityFilter) return false;
+    return true;
+  });
 
   const avgDiscount =
     listings.length > 0
@@ -45,6 +50,11 @@ export default function LaunchpadPage() {
 
   const totalFunding = listings.reduce(
     (s, l) => s + (l.funding_target || 0),
+    0
+  );
+
+  const totalRaised = listings.reduce(
+    (s, l) => s + (l.funding_raised || 0),
     0
   );
 
@@ -59,8 +69,8 @@ export default function LaunchpadPage() {
               Grower Launchpad
             </h1>
             <p className="text-sm text-muted mt-1">
-              Self-service crop listings with transparent oracle-based investor
-              discounts.
+              Forward-fund agricultural commodities with transparent oracle-based
+              investor discounts.
             </p>
           </div>
           <Link
@@ -85,17 +95,37 @@ export default function LaunchpadPage() {
             icon={<BarChart3 size={14} />}
           />
           <Stat
-            label="Total Funding"
+            label="Total Target"
             value={`$${(totalFunding / 1000).toFixed(0)}k`}
             icon={<Rocket size={14} />}
           />
           <Stat
-            label="Grade A"
-            value={String(
-              listings.filter((l) => l.risk_grade === "A").length
-            )}
+            label="Total Raised"
+            value={`$${(totalRaised / 1000).toFixed(0)}k`}
             icon={<Filter size={14} />}
           />
+        </div>
+
+        {/* Commodity filter */}
+        <div className="flex gap-2 flex-wrap">
+          {([
+            { value: "all" as CommodityFilter, label: "All Commodities", icon: null },
+            { value: "cannabis" as CommodityFilter, label: "Cannabis", icon: <Leaf size={12} /> },
+            { value: "soybeans" as CommodityFilter, label: "Soybeans", icon: <Wheat size={12} /> },
+          ]).map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setCommodityFilter(opt.value)}
+              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                commodityFilter === opt.value
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "border-border text-muted hover:text-foreground hover:border-primary/20"
+              }`}
+            >
+              {opt.icon}
+              {opt.label}
+            </button>
+          ))}
         </div>
 
         {/* Grade filter chips */}

@@ -21,4 +21,5 @@ export const MARKET_PRICES: Record<string, number> = {
   "THC-US-USDC": 52.40,
   "TERP-USDC": 3.21,
   "GROW-USDC": 6.78,
+  "SOY-USDC": 11.42,
 };
