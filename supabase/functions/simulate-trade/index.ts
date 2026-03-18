@@ -44,10 +44,27 @@ Deno.serve(async (req) => {
 
     const lastPrice = Number(ticker.last_price);
 
-    // 2. Random walk: ±0.3%
-    const change = (Math.random() - 0.5) * 0.006;
+    // 2. Read market symbol for commodity-aware volatility
+    const { data: market } = await supabase
+      .from("markets")
+      .select("symbol")
+      .eq("id", market_id)
+      .single();
+
+    const symbol = market?.symbol || "";
+
+    // Commodity-aware volatility and trade sizes
+    // Soybeans: tighter moves (real commodity), larger lots
+    // Cannabis tokens: wider moves (speculative), smaller lots
+    const isSoybean = symbol.startsWith("SOY");
+    const volatility = isSoybean ? 0.002 : 0.006; // ±0.1% vs ±0.3%
+    const minQty = isSoybean ? 5 : 1;
+    const maxQty = isSoybean ? 200 : 50;
+    const spreadBps = isSoybean ? 0.003 : 0.002; // 0.3% vs 0.2%
+
+    const change = (Math.random() - 0.5) * volatility;
     const newPrice = Math.max(0.01, +(lastPrice * (1 + change)).toFixed(4));
-    const quantity = Math.floor(Math.random() * 50) + 1;
+    const quantity = Math.floor(Math.random() * (maxQty - minQty)) + minQty;
     const isBuy = Math.random() > 0.5;
     const buyerId = isBuy ? BOT_ALPHA : BOT_BETA;
     const sellerId = isBuy ? BOT_BETA : BOT_ALPHA;
@@ -105,7 +122,7 @@ Deno.serve(async (req) => {
     const volume24h = Number(ticker.volume_24h || 0) + quantity;
     const high24h = Math.max(Number(ticker.high_24h || newPrice), newPrice);
     const low24h = Math.min(Number(ticker.low_24h || newPrice), newPrice);
-    const spread = +(newPrice * 0.002).toFixed(4); // synthetic 0.2% spread
+    const spread = +(newPrice * spreadBps).toFixed(4);
     const bid = +(newPrice - spread / 2).toFixed(4);
     const ask = +(newPrice + spread / 2).toFixed(4);
 
