@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import type { LaunchpadListing } from "@/lib/types";
 import OracleScorePanel from "@/components/launchpad/OracleScorePanel";
 import InvestModal from "@/components/launchpad/InvestModal";
+import InvestorCapTable from "@/components/launchpad/InvestorCapTable";
 import {
   ArrowLeft,
   MapPin,
@@ -283,6 +284,11 @@ export default function LaunchpadDetail({ id }: { id: string }) {
                   Fund This Crop
                 </button>
               )}
+
+              <InvestorCapTable
+                mintAddress={listing.token_symbol ? null : null}
+                tokenSymbol={listing.token_symbol || "tokens"}
+              />
             </div>
           </div>
         </div>

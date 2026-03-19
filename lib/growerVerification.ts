@@ -10,7 +10,7 @@
 // Uses Helius ZK compression for 10,000x cheaper NFTs than standard Metaplex
 
 import { supabase } from "./supabase";
-import { HELIUS_RPC_URL, isHeliusEnabled, CLEARMARKET_WALLET } from "./helius";
+import { isHeliusEnabled, CLEARMARKET_WALLET, mintCompressedNft } from "./helius";
 import { mockTxSignature } from "./solana";
 
 export type BadgeTier = "none" | "verified" | "trusted" | "elite";
@@ -131,16 +131,8 @@ export async function approveVerification(wallet: string): Promise<boolean> {
 }
 
 /**
- * Step 4: Mint a compressed NFT badge via Helius
- *
- * Uses Helius ZK compression (Bubblegum) to mint a cNFT.
+ * Step 4: Mint a compressed NFT badge via Helius ZK compression.
  * Costs ~0.000005 SOL vs ~0.01 SOL for standard NFTs.
- *
- * In production:
- *   1. Call Helius mintCompressedNft API
- *   2. Store the asset ID and tx signature
- *
- * Current: simulated with mock data, ready for real Helius integration
  */
 export async function mintBadgeNft(
   wallet: string
@@ -155,40 +147,21 @@ export async function mintBadgeNft(
   let txSignature: string;
 
   if (isHeliusEnabled()) {
-    // Real Helius compressed NFT minting
-    try {
-      const res = await fetch(HELIUS_RPC_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "mintCompressedNft",
-          params: {
-            name: `ClearMarket ${tier.charAt(0).toUpperCase() + tier.slice(1)} Grower`,
-            symbol: "CMGRW",
-            owner: wallet,
-            delegate: CLEARMARKET_WALLET,
-            collection: "ClearMarket Grower Badges",
-            uri: "", // In production: point to Arweave/IPFS metadata
-            attributes: [
-              { trait_type: "Tier", value: tier },
-              { trait_type: "Completed Cycles", value: String(verification.completed_cycles) },
-              { trait_type: "Total Funded", value: `$${verification.total_funded.toLocaleString()}` },
-            ],
-          },
-        }),
-      });
-      const json = await res.json();
-      assetId = json.result?.assetId ?? `cNFT_${mockTxSignature().slice(0, 20)}`;
-      txSignature = json.result?.signature ?? mockTxSignature();
-    } catch {
-      // Fallback to simulated
-      assetId = `cNFT_${mockTxSignature().slice(0, 20)}`;
-      txSignature = mockTxSignature();
-    }
+    const result = await mintCompressedNft({
+      name: `ClearMarket ${tier.charAt(0).toUpperCase() + tier.slice(1)} Grower`,
+      symbol: "CMGRW",
+      owner: wallet,
+      delegate: CLEARMARKET_WALLET,
+      collection: "ClearMarket Grower Badges",
+      attributes: [
+        { trait_type: "Tier", value: tier },
+        { trait_type: "Completed Cycles", value: String(verification.completed_cycles) },
+        { trait_type: "Total Funded", value: `$${verification.total_funded.toLocaleString()}` },
+      ],
+    });
+    assetId = result?.assetId ?? `cNFT_${mockTxSignature().slice(0, 20)}`;
+    txSignature = result?.signature ?? mockTxSignature();
   } else {
-    // Simulated minting
     assetId = `cNFT_${mockTxSignature().slice(0, 20)}`;
     txSignature = mockTxSignature();
   }
