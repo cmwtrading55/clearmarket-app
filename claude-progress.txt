@@ -1,0 +1,40 @@
+## ClearMarket Progress Log
+
+### 2026-03-20 — Initial Harness Setup
+
+**State**: Platform refactored from exchange-first to launchpad-first architecture.
+Legacy trade pages, exchange components, and mock data removed. Current focus is
+agricultural commodity launchpad + grower verification + portfolio tracking.
+
+**Features passing**: 8/20 (landing, wallet connect, launchpad listing, grower pages,
+dashboard, legal pages, navigation)
+
+**Features failing**: 12/20 (auth callback, invest flow, submission flow, grower
+comparison, portfolio P&L, settlement, verification flow, escrow, oracle cron,
+Helius webhook, mobile responsive)
+
+**Key decisions**:
+- Removed exchange/trade pages entirely (batch, markets, risk, suppliers, trade)
+- Consolidated to launchpad-first flow: growers list commodities, investors fund via launchpad
+- Solana escrow program handles investment lockup
+- Helius provides RPC + webhooks for on-chain event tracking
+- Soybean oracle cron prices commodities via Supabase edge function
+- Static export (no SSR) deployed to Cloudflare Pages
+
+**Next priorities**:
+1. Fix invest flow (InvestModal -> escrow) end-to-end
+2. Get grower verification working with real document upload
+3. Portfolio page showing real holdings from Supabase
+4. Mobile responsive pass on all pages
+5. Settlement tracking with real escrow data
+
+**Known issues**:
+- Hardcoded Supabase anon key fallback in lib/config.ts (should be env-only)
+- MOCK_USER_ID still used in some components
+- No test framework configured
+- .env.local not in .gitignore warning resolved
+
+**Tech debt**:
+- Empty components/landing/ and components/portfolio/ directories
+- Unused lottie-react dependency (check if animations are still used)
+- lib/hooks.ts was deleted — verify no imports reference it

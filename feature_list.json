@@ -1,0 +1,142 @@
+[
+  {
+    "id": "F001",
+    "category": "landing",
+    "description": "Landing page loads with hero, feature sections, and CTA",
+    "steps": ["Navigate to /", "Verify hero renders", "Verify CTA buttons work"],
+    "passes": true
+  },
+  {
+    "id": "F002",
+    "category": "auth",
+    "description": "User can connect Solana wallet via modal",
+    "steps": ["Click Connect Wallet", "Select wallet provider", "Verify connection state updates in navbar"],
+    "passes": true
+  },
+  {
+    "id": "F003",
+    "category": "auth",
+    "description": "Supabase auth callback handles redirect correctly",
+    "steps": ["Navigate to /auth/callback with valid session", "Verify redirect to dashboard"],
+    "passes": false
+  },
+  {
+    "id": "F004",
+    "category": "launchpad",
+    "description": "Launchpad page lists all commodity offerings",
+    "steps": ["Navigate to /launchpad", "Verify LaunchpadCards render", "Verify oracle scores display"],
+    "passes": true
+  },
+  {
+    "id": "F005",
+    "category": "launchpad",
+    "description": "User can view individual launchpad listing details",
+    "steps": ["Click a LaunchpadCard", "Navigate to /launchpad/[id]", "Verify details page renders"],
+    "passes": true
+  },
+  {
+    "id": "F006",
+    "category": "launchpad",
+    "description": "User can invest in a launchpad listing via InvestModal",
+    "steps": ["Click Invest button", "InvestModal opens", "Enter amount", "Confirm transaction", "Verify escrow interaction"],
+    "passes": false
+  },
+  {
+    "id": "F007",
+    "category": "launchpad",
+    "description": "User can submit a new commodity listing",
+    "steps": ["Navigate to /launchpad/submit", "Fill SubmissionForm", "Submit", "Verify Supabase edge function called"],
+    "passes": false
+  },
+  {
+    "id": "F008",
+    "category": "growers",
+    "description": "Growers page lists verified grower profiles",
+    "steps": ["Navigate to /growers", "Verify GrowerCards render", "Verify filters work"],
+    "passes": true
+  },
+  {
+    "id": "F009",
+    "category": "growers",
+    "description": "Individual grower profile page with verification status",
+    "steps": ["Navigate to /growers/[id]", "Verify profile data renders", "Verify verification badge"],
+    "passes": true
+  },
+  {
+    "id": "F010",
+    "category": "growers",
+    "description": "Grower comparison page allows side-by-side comparison",
+    "steps": ["Navigate to /growers/compare", "Select two growers", "Verify comparison table renders"],
+    "passes": false
+  },
+  {
+    "id": "F011",
+    "category": "dashboard",
+    "description": "Dashboard shows portfolio summary and recent activity",
+    "steps": ["Navigate to /dashboard", "Verify portfolio value displays", "Verify activity feed"],
+    "passes": true
+  },
+  {
+    "id": "F012",
+    "category": "portfolio",
+    "description": "Portfolio page shows user holdings and P&L",
+    "steps": ["Navigate to /portfolio", "Verify holdings table", "Verify P&L calculations"],
+    "passes": false
+  },
+  {
+    "id": "F013",
+    "category": "settlement",
+    "description": "Settlement page shows pending and completed settlements",
+    "steps": ["Navigate to /settlement", "Verify settlement list renders"],
+    "passes": false
+  },
+  {
+    "id": "F014",
+    "category": "verification",
+    "description": "Grower verification flow works end-to-end",
+    "steps": ["Navigate to /verification", "Upload documents", "Submit verification", "Check status update"],
+    "passes": false
+  },
+  {
+    "id": "F015",
+    "category": "solana",
+    "description": "Escrow program creates and funds escrow accounts",
+    "steps": ["Connect wallet", "Initiate investment", "Verify escrow account created on-chain"],
+    "passes": false
+  },
+  {
+    "id": "F016",
+    "category": "oracle",
+    "description": "Soybean oracle cron updates pricing data",
+    "steps": ["Trigger update-soybean-oracle function", "Verify price data updated in Supabase"],
+    "passes": false
+  },
+  {
+    "id": "F017",
+    "category": "helius",
+    "description": "Helius webhook processes Solana transaction events",
+    "steps": ["Send test webhook payload", "Verify helius-webhook function processes it"],
+    "passes": false
+  },
+  {
+    "id": "F018",
+    "category": "legal",
+    "description": "Legal pages render correctly (terms, privacy, cookies)",
+    "steps": ["Navigate to /terms", "Navigate to /privacy", "Navigate to /cookies", "Verify content renders"],
+    "passes": true
+  },
+  {
+    "id": "F019",
+    "category": "responsive",
+    "description": "All pages work on mobile viewport (375px)",
+    "steps": ["Set viewport to 375x812", "Navigate to each page", "No horizontal scroll", "Touch targets >= 44px"],
+    "passes": false
+  },
+  {
+    "id": "F020",
+    "category": "navigation",
+    "description": "Navbar links work, active state highlights correctly",
+    "steps": ["Click each nav link", "Verify page loads", "Verify active state styling"],
+    "passes": true
+  }
+]
