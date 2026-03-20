@@ -6,7 +6,7 @@ ClearMarket Labs is a cannabis investment platform on Solana. Growers list canna
 
 **Brand**: Cannabis Purple (#7C3AED) on near-black (#0A0A0F). Sharp DeFi voice. Cannabis-only (soybeans removed).
 
-**PARALLEL WORK WARNING**: A rebrand is running in a separate Claude Code session. Check `claude-progress.txt` for which files are safe to edit.
+**Rebrand complete** (2026-03-20). All files are safe to edit.
 
 ## Stack
 

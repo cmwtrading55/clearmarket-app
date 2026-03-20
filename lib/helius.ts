@@ -436,7 +436,7 @@ export async function getTransactionHistory(
 
 /**
  * Format an enriched transaction into a human-readable string.
- * Turns raw tx data into "Bought 50 SOY @ $11.42" style descriptions.
+ * Turns raw tx data into "Bought 50 CANN-OG-KUSH @ $58.42" style descriptions.
  */
 export function formatTransactionDescription(tx: EnrichedTransaction): string {
   // Helius already provides a description field

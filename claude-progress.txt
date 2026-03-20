@@ -1,61 +1,46 @@
 ## ClearMarket Progress Log
 
-### 2026-03-20 — Cannabis Rebrand In Progress (PARALLEL WORK)
+### 2026-03-20 — Cannabis Rebrand Complete
 
-**IMPORTANT: A separate Claude Code instance is currently running the cannabis rebrand
-(Phases 1-6). DO NOT modify any files listed below until the rebrand is complete.
-Check git log for the latest rebrand commits before starting any work.**
+**State**: Cannabis-only rebrand is DONE. Dark purple crypto theme live.
+Soybean code stripped. Landing page rebuilt. All pages updated.
+Build passes clean. Zero soybean references remaining.
 
-**Rebrand scope (being done elsewhere, do not touch):**
-- app/globals.css (dark purple theme)
-- app/page.tsx (new landing page)
-- lib/types.ts, lib/oracle.ts (soy removal)
-- components/launchpad/* (cannabis-only)
-- components/Navbar.tsx, Footer.tsx, ComplianceBanner.tsx
-- supabase/functions/submit-listing/index.ts
-- supabase/functions/update-soybean-oracle/ (being deleted)
-- components/legacy-landing/ (being deleted)
-- app/portfolio, app/dashboard, app/settlement (copy updates)
-- public/favicon.svg
-
-**Brand update:**
-- Palette: Cannabis Purple (#7C3AED) on near-black (#0A0A0F)
-- Voice: Sharp DeFi native. "Back the Plant. Bank the Return."
+**Brand**:
 - Name: ClearMarket Labs
-- Cannabis-only. All soybean code being stripped.
+- Palette: Cannabis Purple (#7C3AED) on near-black (#0A0A0F)
+- Voice: "Back the Plant. Bank the Return."
+- Cannabis strains as market pairs (OG Kush, GSC, Blue Dream, etc.)
 
-**State**: Platform pivoting from multi-commodity to cannabis-only.
-Rebrand running in parallel session. This agent should focus on
-infrastructure tasks that don't conflict with the rebrand files.
+**Features passing**: 8/20 (landing, wallet connect, launchpad listing, grower pages,
+dashboard, legal pages, navigation, dark theme renders)
 
-**Features passing**: 8/20 (will change after rebrand lands)
+**Features failing**: 12/20 (auth callback, invest flow, submission flow, grower
+comparison, portfolio P&L, settlement, verification flow, escrow, cannabis oracle,
+Helius webhook, mobile responsive)
 
-**Safe to work on (no rebrand conflict):**
-- lib/escrow.ts (escrow program logic)
-- lib/helius.ts, lib/useHelius.ts (Helius integration)
-- lib/solana.ts, lib/wallet.ts (Solana wallet utils)
-- lib/auth.ts (auth flow)
-- app/verification/ (grower verification flow)
-- app/growers/compare/ (comparison page)
-- app/auth/callback/ (auth callback)
-- app/account/ (account settings)
-- Test framework setup
-- Mobile responsive fixes (after rebrand lands)
+**What just shipped (rebrand)**:
+- Dark purple theme (globals.css full palette swap)
+- New landing page ("Back the Plant. Bank the Return.")
+- Cannabis-only market pairs in constants.ts
+- Soybean oracle deleted, types stripped, submission form cannabis-only
+- Legacy landing components deleted
+- Navbar + Footer + ComplianceBanner updated
+- All copy updated (grows not investments)
 
-**Next priorities (post-rebrand):**
-1. Fix invest flow (InvestModal -> escrow) end-to-end
-2. Get grower verification working with real document upload
-3. Portfolio page showing real holdings from Supabase
-4. Mobile responsive pass on all pages
-5. Settlement tracking with real escrow data
+**Next priorities**:
+1. Fix invest flow (InvestModal -> escrow) end-to-end [CLE-5]
+2. Fix Supabase auth callback redirect [CLE-1]
+3. Grower verification with document upload [CLE-2]
+4. Helius webhook processing [CLE-3]
+5. Full QA audit on rebranded site [CLE-4]
+6. Portfolio page with real Supabase data
+7. Mobile responsive pass
 
-**Known issues:**
-- Hardcoded Supabase anon key fallback in lib/config.ts (should be env-only)
+**Known issues**:
+- Hardcoded Supabase anon key fallback in lib/config.ts
 - MOCK_USER_ID still used in some components
 - No test framework configured
-- Soybean oracle being deleted (rebrand)
-
-**Tech debt:**
 - Empty components/portfolio/ directory
-- Unused lottie-react dependency (check post-rebrand)
-- lib/hooks.ts was deleted, verify no imports reference it
+
+**Deployment**: Cloudflare Pages via `npm run deploy`
