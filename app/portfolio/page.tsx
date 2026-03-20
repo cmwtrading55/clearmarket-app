@@ -15,7 +15,7 @@ export default function PortfolioPage() {
           <Wallet size={40} className="text-muted mx-auto" />
           <h2 className="text-lg font-semibold text-foreground">Connect Your Wallet</h2>
           <p className="text-sm text-muted max-w-sm">
-            Connect a wallet to view your crop funding investments and payout history.
+            Connect a wallet to view your funded grows and payout history.
           </p>
         </div>
       </main>
@@ -28,7 +28,7 @@ export default function PortfolioPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Portfolio</h1>
           <p className="text-sm text-muted mt-1">
-            Your crop funding investments and payouts
+            Your grows and payouts
           </p>
         </div>
 
@@ -36,11 +36,10 @@ export default function PortfolioPage() {
         <div className="bg-card-bg border border-border rounded-xl p-12 text-center">
           <Sprout size={40} className="text-muted mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            No investments yet
+            No grows funded yet
           </h3>
           <p className="text-sm text-muted max-w-md mx-auto mb-6">
-            Your funded crops will appear here once you invest in listings
-            on the launchpad. Returns will be tracked as harvests settle.
+            Your funded grows will appear here. Back a grower on the launchpad and track returns as harvests settle.
           </p>
           <Link
             href="/launchpad"

@@ -5,7 +5,6 @@ const LEGAL_LINKS = [
   { label: "Terms of Service", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Cookie Policy", href: "/cookies" },
-  { label: "Risk Notice", href: "/risk" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -17,14 +16,13 @@ export default function Footer() {
           {/* Logo + tagline */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+              <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 7 7 12c0 2.5 1 4.5 3 5.5V22h4v-4.5c2-1 3-3 3-5.5 0-5-5-10-5-10z"/></svg>
               <span className="text-lg font-bold tracking-tight text-foreground">
                 ClearMarket Labs
               </span>
             </div>
             <p className="text-sm text-muted max-w-md">
-              Tokenised crop markets for cannabis supply chains. Built for
-              regulated reality.
+              Cannabis capital markets on Solana. Fund real grows, earn real returns.
             </p>
           </div>
 
@@ -45,9 +43,7 @@ export default function Footer() {
         <div className="mt-8 pt-6 border-t border-border space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <p className="text-xs text-muted">
-              &copy; {new Date().getFullYear()} ClearMarket Labs. All rights
-              reserved. ClearMarket Labs is a prototype and does not provide
-              regulated financial services.
+              &copy; {new Date().getFullYear()} ClearMarket Labs. All rights reserved.
             </p>
             <div className="flex items-center gap-2">
               <svg className="w-3.5 h-3.5 text-muted" viewBox="0 0 397.7 311.7" fill="currentColor">

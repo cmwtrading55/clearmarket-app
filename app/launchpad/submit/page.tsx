@@ -13,10 +13,10 @@ export default function LaunchpadSubmitPage() {
         <div>
           <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Sprout size={22} className="text-primary" />
-            List Your Crop
+            List Your Grow
           </h1>
           <p className="text-sm text-muted mt-1">
-            Submit a crop proposal to the launchpad. The oracle algorithm
+            Submit a cannabis grow to the launchpad. The oracle algorithm
             calculates an investor discount based on data completeness, buyer
             contracts, and your track record.
           </p>

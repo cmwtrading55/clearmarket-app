@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LaunchpadListing } from "@/lib/types";
-import { MapPin, Calendar, TrendingDown, Leaf, Wheat } from "lucide-react";
+import { MapPin, Calendar, TrendingDown, Leaf } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-muted/10 text-muted",
@@ -17,24 +17,15 @@ const GRADE_STYLES: Record<string, string> = {
   D: "text-sell",
 };
 
-const COMMODITY_ICONS: Record<string, React.ReactNode> = {
-  cannabis: <Leaf size={10} />,
-  soybeans: <Wheat size={10} />,
-};
-
-const DEFAULT_IMAGES: Record<string, string> = {
-  cannabis: "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=800&q=80",
-  soybeans: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&q=80",
-};
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1536819114556-1e10f967fb61?w=800&q=80";
 
 interface Props {
   listing: LaunchpadListing;
 }
 
 export default function LaunchpadCard({ listing }: Props) {
-  const commodity = listing.commodity_type || "cannabis";
-  const heroImg = listing.hero_image || DEFAULT_IMAGES[commodity] || DEFAULT_IMAGES.cannabis;
-  const displayName = commodity === "soybeans" ? (listing.variety || listing.strain) : listing.strain;
+  const heroImg = listing.hero_image || DEFAULT_IMAGE;
+  const displayName = listing.strain;
   const fundingPct = listing.funding_target && listing.funding_target > 0
     ? Math.min((listing.funding_raised / listing.funding_target) * 100, 100)
     : 0;
@@ -65,12 +56,6 @@ export default function LaunchpadCard({ listing }: Props) {
             }`}
           >
             Grade {listing.risk_grade}
-          </span>
-        </div>
-        <div className="absolute top-3 right-3">
-          <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-background/60 backdrop-blur-sm text-foreground capitalize">
-            {COMMODITY_ICONS[commodity]}
-            {commodity}
           </span>
         </div>
       </div>
@@ -138,7 +123,7 @@ export default function LaunchpadCard({ listing }: Props) {
           </div>
         </div>
 
-        {/* Harvest + funding */}
+        {/* Harvest */}
         <div className="flex items-center justify-between text-xs text-muted">
           <span className="flex items-center gap-1">
             <Calendar size={12} />
@@ -149,9 +134,6 @@ export default function LaunchpadCard({ listing }: Props) {
                 })
               : "TBD"}
           </span>
-          {commodity === "soybeans" && listing.variety && (
-            <span className="font-mono text-foreground/60">{listing.variety}</span>
-          )}
         </div>
       </div>
     </Link>

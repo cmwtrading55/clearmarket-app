@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #111827;
-  --primary: #00C98D;
-  --secondary: #F3F4F6;
-  --card-bg: #F9FAFB;
-  --muted: #6B7280;
-  --accent-glow: rgba(0, 201, 141, 0.10);
+  --background: #0A0A0F;
+  --foreground: #E8E6F0;
+  --primary: #7C3AED;
+  --secondary: #151520;
+  --card-bg: #12121A;
+  --muted: #6B6B80;
+  --accent-glow: rgba(124, 58, 237, 0.12);
+  --border: #1E1E2E;
+  --buy: #22C55E;
+  --sell: #EF4444;
+  --warning: #F59E0B;
 }
 
 @theme inline {
@@ -18,12 +22,12 @@
   --color-surface: var(--secondary);
   --color-card: var(--card-bg);
   --color-card-bg: var(--card-bg);
-  --color-border: #E5E7EB;
+  --color-border: var(--border);
   --color-muted: var(--muted);
   --color-accent-glow: var(--accent-glow);
-  --color-buy: #16A34A;
-  --color-sell: #DC2626;
-  --color-warning: #D97706;
+  --color-buy: var(--buy);
+  --color-sell: var(--sell);
+  --color-warning: var(--warning);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
@@ -40,14 +44,14 @@ body {
 /* Grid pattern background */
 .bg-grid-pattern {
   background-image:
-    linear-gradient(rgba(0, 229, 160, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 160, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(124, 58, 237, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.04) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(135deg, #00A676, #0094A8);
+  background: linear-gradient(135deg, #7C3AED, #22C55E);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -64,7 +68,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #2A2A3E;
   border-radius: 3px;
 }
 

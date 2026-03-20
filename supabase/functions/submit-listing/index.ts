@@ -7,16 +7,14 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// --- Commodity-agnostic oracle scoring engine ---
-
-type CommodityType = "cannabis" | "soybeans";
+// --- Cannabis oracle scoring engine ---
 
 interface ScoringField {
   key: string;
   points: number;
 }
 
-const CANNABIS_FIELDS: ScoringField[] = [
+const SCORING_FIELDS: ScoringField[] = [
   { key: "strain", points: 5 },
   { key: "description", points: 5 },
   { key: "hero_image", points: 5 },
@@ -38,33 +36,6 @@ const CANNABIS_FIELDS: ScoringField[] = [
   { key: "insurance_coverage", points: 10 },
 ];
 
-const SOYBEANS_FIELDS: ScoringField[] = [
-  { key: "variety", points: 5 },
-  { key: "description", points: 5 },
-  { key: "hero_image", points: 5 },
-  { key: "region", points: 5 },
-  { key: "yield_tonnes", points: 5 },
-  { key: "harvest_date", points: 5 },
-  { key: "funding_target", points: 5 },
-  { key: "price_per_token", points: 5 },
-  { key: "protein_content", points: 5 },
-  { key: "moisture_percent", points: 5 },
-  { key: "oil_content", points: 5 },
-  { key: "usda_grade", points: 5 },
-  { key: "storage_facility", points: 5 },
-  { key: "delivery_terms", points: 5 },
-  { key: "farm_certification", points: 5 },
-  { key: "token_symbol", points: 5 },
-  { key: "grower_location", points: 5 },
-  { key: "grower_name", points: 5 },
-  { key: "insurance_coverage", points: 10 },
-];
-
-const SCORING_FIELDS: Record<CommodityType, ScoringField[]> = {
-  cannabis: CANNABIS_FIELDS,
-  soybeans: SOYBEANS_FIELDS,
-};
-
 function hasValue(v: unknown): boolean {
   if (v === null || v === undefined || v === "") return false;
   if (typeof v === "number") return v > 0;
@@ -72,10 +43,9 @@ function hasValue(v: unknown): boolean {
   return true;
 }
 
-function calcCompleteness(data: Record<string, unknown>, commodityType: CommodityType): number {
-  const fields = SCORING_FIELDS[commodityType] || SCORING_FIELDS.cannabis;
+function calcCompleteness(data: Record<string, unknown>): number {
   let score = 0;
-  for (const f of fields) {
+  for (const f of SCORING_FIELDS) {
     if (hasValue(data[f.key])) score += f.points;
   }
   return Math.min(score, 100);
@@ -98,10 +68,9 @@ interface OracleResult {
 
 function calcOracle(
   data: Record<string, unknown>,
-  historyScore: number,
-  commodityType: CommodityType
+  historyScore: number
 ): OracleResult {
-  const completeness = calcCompleteness(data, commodityType);
+  const completeness = calcCompleteness(data);
   const buyerBonus = calcBuyerBonus(data);
   const composite = completeness * 0.4 + buyerBonus * 0.8 + historyScore * 0.4;
   const capped = Math.min(composite, 100);
@@ -130,18 +99,10 @@ Deno.serve(async (req) => {
     );
 
     const body = await req.json();
-    const commodityType: CommodityType = body.commodity_type || "cannabis";
 
-    // Validate required fields per commodity
-    if (commodityType === "cannabis" && !body.strain) {
+    if (!body.strain) {
       return new Response(
         JSON.stringify({ error: "Missing required field: strain" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    if (commodityType === "soybeans" && !body.variety) {
-      return new Response(
-        JSON.stringify({ error: "Missing required field: variety" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -168,15 +129,14 @@ Deno.serve(async (req) => {
       historyScore = Math.min(Math.min(settled * 20, 60) + Math.min(listed * 10, 40), 100);
     }
 
-    const oracle = calcOracle(body, historyScore, commodityType);
+    const oracle = calcOracle(body, historyScore);
 
     const row: Record<string, unknown> = {
-      commodity_type: commodityType,
+      commodity_type: "cannabis",
       grower_wallet: body.grower_wallet,
       grower_name: body.grower_name || null,
       grower_location: body.grower_location || null,
       grower_type: body.grower_type || null,
-      // Shared
       description: body.description || null,
       hero_image: body.hero_image || null,
       region: body.region || null,
@@ -189,7 +149,7 @@ Deno.serve(async (req) => {
       insurance_coverage: body.insurance_coverage || false,
       contracted_buyer: body.contracted_buyer || false,
       contracted_buyer_name: body.contracted_buyer_name || null,
-      // Cannabis-specific
+      // Cannabis fields
       strain: body.strain || null,
       yield_kg: body.yield_kg || null,
       thc_percent: body.thc_percent || null,
@@ -200,16 +160,6 @@ Deno.serve(async (req) => {
       facility_certification: body.facility_certification || null,
       lab_testing_provider: body.lab_testing_provider || null,
       expected_terpene_profile: body.expected_terpene_profile || null,
-      // Soybean-specific
-      variety: body.variety || null,
-      yield_tonnes: body.yield_tonnes || null,
-      protein_content: body.protein_content || null,
-      moisture_percent: body.moisture_percent || null,
-      oil_content: body.oil_content || null,
-      usda_grade: body.usda_grade || null,
-      storage_facility: body.storage_facility || null,
-      delivery_terms: body.delivery_terms || null,
-      farm_certification: body.farm_certification || null,
       // Oracle scores
       completeness_score: oracle.completeness,
       history_score: oracle.historyScore,

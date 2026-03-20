@@ -86,13 +86,11 @@ export interface Payout {
 
 // Launchpad types
 
-export type CommodityType = "cannabis" | "soybeans";
-
 export type LaunchpadStatus = "draft" | "pending_review" | "approved" | "rejected" | "funding";
 
 export interface LaunchpadListing {
   id: string;
-  commodity_type: CommodityType;
+  commodity_type: "cannabis";
   grower_wallet: string;
   grower_name: string | null;
   grower_location: string | null;
@@ -110,7 +108,7 @@ export interface LaunchpadListing {
   insurance_coverage: boolean;
   contracted_buyer: boolean;
   contracted_buyer_name: string | null;
-  // Cannabis-specific fields (null for soybean listings)
+  // Cannabis-specific fields
   strain: string | null;
   yield_kg: number | null;
   thc_percent: number | null;
@@ -121,16 +119,6 @@ export interface LaunchpadListing {
   facility_certification: string | null;
   lab_testing_provider: string | null;
   expected_terpene_profile: string | null;
-  // Soybean-specific fields
-  variety: string | null;
-  yield_tonnes: number | null;
-  protein_content: number | null;
-  moisture_percent: number | null;
-  oil_content: number | null;
-  usda_grade: string | null;
-  storage_facility: string | null;
-  delivery_terms: string | null;
-  farm_certification: string | null;
   // Oracle scores
   completeness_score: number;
   history_score: number;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import type { LaunchpadListing, CommodityType } from "@/lib/types";
+import type { LaunchpadListing } from "@/lib/types";
 import LaunchpadCard from "@/components/launchpad/LaunchpadCard";
 import {
   Rocket,
@@ -11,18 +11,14 @@ import {
   BarChart3,
   Filter,
   Loader2,
-  Leaf,
-  Wheat,
 } from "lucide-react";
 
 type GradeFilter = "all" | "A" | "B" | "C" | "D";
-type CommodityFilter = "all" | CommodityType;
 
 export default function LaunchpadPage() {
   const [listings, setListings] = useState<LaunchpadListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [gradeFilter, setGradeFilter] = useState<GradeFilter>("all");
-  const [commodityFilter, setCommodityFilter] = useState<CommodityFilter>("all");
 
   useEffect(() => {
     async function load() {
@@ -39,7 +35,6 @@ export default function LaunchpadPage() {
 
   const filtered = listings.filter((l) => {
     if (gradeFilter !== "all" && l.risk_grade !== gradeFilter) return false;
-    if (commodityFilter !== "all" && (l.commodity_type || "cannabis") !== commodityFilter) return false;
     return true;
   });
 
@@ -66,10 +61,10 @@ export default function LaunchpadPage() {
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Rocket size={22} className="text-primary" />
-              Grower Launchpad
+              Cannabis Launchpad
             </h1>
             <p className="text-sm text-muted mt-1">
-              Forward-fund agricultural commodities with transparent oracle-based
+              Forward-fund cannabis grows with transparent oracle-based
               investor discounts.
             </p>
           </div>
@@ -78,7 +73,7 @@ export default function LaunchpadPage() {
             className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors shrink-0"
           >
             <Sprout size={14} />
-            List Your Crop
+            List Your Grow
           </Link>
         </div>
 
@@ -104,28 +99,6 @@ export default function LaunchpadPage() {
             value={`$${(totalRaised / 1000).toFixed(0)}k`}
             icon={<Filter size={14} />}
           />
-        </div>
-
-        {/* Commodity filter */}
-        <div className="flex gap-2 flex-wrap">
-          {([
-            { value: "all" as CommodityFilter, label: "All Commodities", icon: null },
-            { value: "cannabis" as CommodityFilter, label: "Cannabis", icon: <Leaf size={12} /> },
-            { value: "soybeans" as CommodityFilter, label: "Soybeans", icon: <Wheat size={12} /> },
-          ]).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setCommodityFilter(opt.value)}
-              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-                commodityFilter === opt.value
-                  ? "bg-primary/10 text-primary border-primary/30"
-                  : "border-border text-muted hover:text-foreground hover:border-primary/20"
-              }`}
-            >
-              {opt.icon}
-              {opt.label}
-            </button>
-          ))}
         </div>
 
         {/* Grade filter chips */}
@@ -155,7 +128,7 @@ export default function LaunchpadPage() {
             <Sprout size={40} className="text-muted mx-auto mb-3" />
             <p className="text-muted text-sm">
               {listings.length === 0
-                ? "No listings yet. Be the first to list your crop!"
+                ? "No listings yet. Be the first to list your grow!"
                 : "No listings match this filter."}
             </p>
           </div>

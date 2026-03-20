@@ -2,7 +2,11 @@
 
 ## What This Is
 
-ClearMarket is a Bayesian decision intelligence platform for agricultural commodity markets. Built on Solana + Supabase. The app lets growers list commodities (cannabis, hemp, CBD, soy), investors fund them via a launchpad, and an oracle system provides real-time pricing and verification.
+ClearMarket Labs is a cannabis investment platform on Solana. Growers list cannabis grows, investors fund them with USDC via escrow, and an oracle system scores and verifies each grow. Crypto-native, DeFi-adjacent. "Back the Plant. Bank the Return."
+
+**Brand**: Cannabis Purple (#7C3AED) on near-black (#0A0A0F). Sharp DeFi voice. Cannabis-only (soybeans removed).
+
+**PARALLEL WORK WARNING**: A rebrand is running in a separate Claude Code session. Check `claude-progress.txt` for which files are safe to edit.
 
 ## Stack
 

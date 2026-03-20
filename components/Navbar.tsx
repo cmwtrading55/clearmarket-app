@@ -27,7 +27,7 @@ export default function Navbar() {
       <nav className="sticky top-0 z-50 flex items-center justify-between h-16 px-6 bg-background/80 backdrop-blur-xl border-b border-border">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+          <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 7 7 12c0 2.5 1 4.5 3 5.5V22h4v-4.5c2-1 3-3 3-5.5 0-5-5-10-5-10z"/></svg>
           <span className="text-lg font-bold tracking-tight text-foreground">
             ClearMarket Labs
           </span>

@@ -141,11 +141,11 @@ export default function GrowerDetail({
                             href={`/launchpad/${listing.id}`}
                             className="text-foreground hover:text-primary transition-colors font-medium"
                           >
-                            {listing.strain || listing.variety || "Unnamed"}
+                            {listing.strain || "Unnamed"}
                           </Link>
                         </td>
                         <td className="py-2.5 pr-4 text-muted capitalize">
-                          {listing.commodity_type}
+                          Cannabis
                         </td>
                         <td className="py-2.5 pr-4">
                           <span className={`px-2 py-0.5 rounded-full capitalize text-[10px] ${STATUS_STYLES[listing.status] || "bg-muted/10 text-muted"}`}>

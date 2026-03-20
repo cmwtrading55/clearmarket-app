@@ -9,9 +9,8 @@ export default function ComplianceBanner() {
   if (pathname?.startsWith("/trade")) return null;
 
   return (
-    <div className="bg-red-600/90 text-white text-center text-xs py-1.5 px-4 font-medium">
-      ClearMarket Labs is a prototype platform. This is not financial advice and
-      does not constitute a regulated financial service.
+    <div className="bg-primary/10 text-primary text-center text-xs py-1.5 px-4 font-medium border-b border-primary/20">
+      ClearMarket Labs operates in jurisdictions where cannabis investment is permitted. Not available in all regions.
     </div>
   );
 }

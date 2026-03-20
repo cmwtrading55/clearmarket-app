@@ -28,7 +28,7 @@ export default function SettlementPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Settlement</h1>
           <p className="text-sm text-muted mt-1">
-            Claim harvest outcomes and track payouts
+            Claim grow outcomes and track payouts
           </p>
         </div>
 
@@ -39,7 +39,7 @@ export default function SettlementPage() {
             No settlements yet
           </h3>
           <p className="text-sm text-muted max-w-md mx-auto">
-            Settlement data will appear here when your funded crops reach
+            Settlement data will appear here when your funded grows reach
             milestones. Payouts are distributed automatically via Solana
             smart contract when harvests are verified.
           </p>

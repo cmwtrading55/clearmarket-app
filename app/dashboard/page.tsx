@@ -46,7 +46,7 @@ export default function DashboardPage() {
           <div className="bg-card-bg border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Package size={14} className="text-primary" />
-              <span className="text-xs text-muted">Active Investments</span>
+              <span className="text-xs text-muted">Active Grows</span>
             </div>
             <p className="text-xl font-semibold text-foreground">0</p>
           </div>
@@ -72,7 +72,7 @@ export default function DashboardPage() {
           <div className="text-center py-12">
             <Package size={32} className="text-muted mx-auto mb-3" />
             <p className="text-sm text-muted mb-4">
-              No listings yet. Submit a crop listing on the launchpad to get started.
+              No listings yet. Submit a cannabis listing on the launchpad to get started.
             </p>
             <Link
               href="/launchpad/submit"

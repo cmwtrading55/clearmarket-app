@@ -1,40 +1,61 @@
 ## ClearMarket Progress Log
 
-### 2026-03-20 — Initial Harness Setup
+### 2026-03-20 — Cannabis Rebrand In Progress (PARALLEL WORK)
 
-**State**: Platform refactored from exchange-first to launchpad-first architecture.
-Legacy trade pages, exchange components, and mock data removed. Current focus is
-agricultural commodity launchpad + grower verification + portfolio tracking.
+**IMPORTANT: A separate Claude Code instance is currently running the cannabis rebrand
+(Phases 1-6). DO NOT modify any files listed below until the rebrand is complete.
+Check git log for the latest rebrand commits before starting any work.**
 
-**Features passing**: 8/20 (landing, wallet connect, launchpad listing, grower pages,
-dashboard, legal pages, navigation)
+**Rebrand scope (being done elsewhere, do not touch):**
+- app/globals.css (dark purple theme)
+- app/page.tsx (new landing page)
+- lib/types.ts, lib/oracle.ts (soy removal)
+- components/launchpad/* (cannabis-only)
+- components/Navbar.tsx, Footer.tsx, ComplianceBanner.tsx
+- supabase/functions/submit-listing/index.ts
+- supabase/functions/update-soybean-oracle/ (being deleted)
+- components/legacy-landing/ (being deleted)
+- app/portfolio, app/dashboard, app/settlement (copy updates)
+- public/favicon.svg
 
-**Features failing**: 12/20 (auth callback, invest flow, submission flow, grower
-comparison, portfolio P&L, settlement, verification flow, escrow, oracle cron,
-Helius webhook, mobile responsive)
+**Brand update:**
+- Palette: Cannabis Purple (#7C3AED) on near-black (#0A0A0F)
+- Voice: Sharp DeFi native. "Back the Plant. Bank the Return."
+- Name: ClearMarket Labs
+- Cannabis-only. All soybean code being stripped.
 
-**Key decisions**:
-- Removed exchange/trade pages entirely (batch, markets, risk, suppliers, trade)
-- Consolidated to launchpad-first flow: growers list commodities, investors fund via launchpad
-- Solana escrow program handles investment lockup
-- Helius provides RPC + webhooks for on-chain event tracking
-- Soybean oracle cron prices commodities via Supabase edge function
-- Static export (no SSR) deployed to Cloudflare Pages
+**State**: Platform pivoting from multi-commodity to cannabis-only.
+Rebrand running in parallel session. This agent should focus on
+infrastructure tasks that don't conflict with the rebrand files.
 
-**Next priorities**:
+**Features passing**: 8/20 (will change after rebrand lands)
+
+**Safe to work on (no rebrand conflict):**
+- lib/escrow.ts (escrow program logic)
+- lib/helius.ts, lib/useHelius.ts (Helius integration)
+- lib/solana.ts, lib/wallet.ts (Solana wallet utils)
+- lib/auth.ts (auth flow)
+- app/verification/ (grower verification flow)
+- app/growers/compare/ (comparison page)
+- app/auth/callback/ (auth callback)
+- app/account/ (account settings)
+- Test framework setup
+- Mobile responsive fixes (after rebrand lands)
+
+**Next priorities (post-rebrand):**
 1. Fix invest flow (InvestModal -> escrow) end-to-end
 2. Get grower verification working with real document upload
 3. Portfolio page showing real holdings from Supabase
 4. Mobile responsive pass on all pages
 5. Settlement tracking with real escrow data
 
-**Known issues**:
+**Known issues:**
 - Hardcoded Supabase anon key fallback in lib/config.ts (should be env-only)
 - MOCK_USER_ID still used in some components
 - No test framework configured
-- .env.local not in .gitignore warning resolved
+- Soybean oracle being deleted (rebrand)
 
-**Tech debt**:
-- Empty components/landing/ and components/portfolio/ directories
-- Unused lottie-react dependency (check if animations are still used)
-- lib/hooks.ts was deleted — verify no imports reference it
+**Tech debt:**
+- Empty components/portfolio/ directory
+- Unused lottie-react dependency (check post-rebrand)
+- lib/hooks.ts was deleted, verify no imports reference it

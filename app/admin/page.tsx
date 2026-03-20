@@ -256,7 +256,6 @@ function PendingListingsTab({ adminWallet }: { adminWallet: string }) {
               <p className="text-foreground font-medium">
                 {l.grower_name ?? "Unknown Grower"}
                 {l.strain ? ` — ${l.strain}` : ""}
-                {l.variety ? ` — ${l.variety}` : ""}
               </p>
               <div className="flex flex-wrap gap-4 text-xs text-muted">
                 <span>Target: {formatUsd(l.funding_target)}</span>

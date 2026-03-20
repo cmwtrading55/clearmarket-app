@@ -142,7 +142,7 @@ export default function InvestModal({ listing, onClose }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-foreground">
-            Fund {listing.commodity_type === "soybeans" ? (listing.variety || "Soybeans") : listing.strain}
+            Fund {listing.strain}
           </h2>
           <button
             onClick={onClose}

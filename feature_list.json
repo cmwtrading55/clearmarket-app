@@ -107,8 +107,8 @@
   {
     "id": "F016",
     "category": "oracle",
-    "description": "Soybean oracle cron updates pricing data",
-    "steps": ["Trigger update-soybean-oracle function", "Verify price data updated in Supabase"],
+    "description": "Cannabis oracle scores and prices active grows",
+    "steps": ["Verify oracle scoring logic in lib/oracle.ts", "Check scores render on LaunchpadCard", "Verify OracleScorePanel displays correctly"],
     "passes": false
   },
   {
