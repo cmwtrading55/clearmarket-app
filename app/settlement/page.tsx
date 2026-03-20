@@ -1,18 +1,9 @@
 "use client";
 
 import { useWallet } from "@/lib/wallet";
-import { mockBatches } from "@/data/mockBatches";
-import { mockPayouts } from "@/data/mockPortfolio";
 import Footer from "@/components/Footer";
-import Link from "next/link";
-import { Wallet, CheckCircle, Clock, AlertTriangle, ExternalLink } from "lucide-react";
-import { PROGRAM_ID, shortenAddress, deterministicTxSig, deterministicSlot, solscanTxUrl } from "@/lib/solana";
-
-const PAYOUT_STYLES = {
-  completed: { bg: "bg-primary/10 text-primary", icon: CheckCircle },
-  processing: { bg: "bg-warning/10 text-warning", icon: Clock },
-  pending: { bg: "bg-muted/10 text-muted", icon: Clock },
-};
+import { Wallet, Clock, AlertTriangle } from "lucide-react";
+import { PROGRAM_ID, shortenAddress } from "@/lib/solana";
 
 export default function SettlementPage() {
   const { connected } = useWallet();
@@ -31,8 +22,6 @@ export default function SettlementPage() {
     );
   }
 
-  const settledBatches = mockBatches.filter((b) => b.status === "settled" || b.status === "harvested");
-
   return (
     <main className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -43,80 +32,17 @@ export default function SettlementPage() {
           </p>
         </div>
 
-        {/* Settled batches */}
-        <div className="space-y-4">
-          {settledBatches.map((batch) => {
-            const payout = mockPayouts.find((p) => p.batchId === batch.id);
-            return (
-              <div key={batch.id} className="bg-card-bg border border-border rounded-xl p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">{batch.strain}</h3>
-                    <p className="text-xs text-muted mt-0.5">{batch.grower} &middot; {batch.region}</p>
-                  </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${batch.status === "settled" ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}`}>
-                    {batch.status}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 mt-4">
-                  <div>
-                    <p className="text-xs text-muted">Yield</p>
-                    <p className="text-sm font-medium text-foreground">{batch.yieldKg} kg</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted">Token Price</p>
-                    <p className="text-sm font-mono text-foreground">${batch.price.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted">Payout</p>
-                    <p className="text-sm font-mono text-foreground">
-                      {payout ? `$${payout.amount.toLocaleString()}` : "Pending"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* On-chain confirmation */}
-                {batch.status === "settled" && (
-                  <div className="flex items-center gap-2 mt-3 text-xs">
-                    <CheckCircle size={12} className="text-primary" />
-                    <span className="text-primary font-medium">Confirmed on Solana</span>
-                    <span className="text-muted font-mono">Slot #{deterministicSlot(batch.id).toLocaleString()}</span>
-                    <span className="text-muted">&middot;</span>
-                    <a
-                      href={solscanTxUrl(deterministicTxSig(batch.id))}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-0.5 text-primary hover:text-primary/80 transition-colors font-mono"
-                    >
-                      {shortenAddress(deterministicTxSig(batch.id), 6)}
-                      <ExternalLink size={10} />
-                    </a>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
-                  {batch.status === "settled" ? (
-                    <button className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors">
-                      <svg className="w-3 h-3" viewBox="0 0 397.7 311.7" fill="currentColor"><path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z"/><path d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z"/><path d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7z"/></svg>
-                      Claim on Solana
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2 text-xs text-warning">
-                      <Clock size={14} />
-                      Awaiting quality assurance
-                    </div>
-                  )}
-                  <Link
-                    href={`/batch/${batch.id}`}
-                    className="text-xs text-muted hover:text-foreground transition-colors"
-                  >
-                    View Batch
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+        {/* Empty state */}
+        <div className="bg-card-bg border border-border rounded-xl p-12 text-center">
+          <Clock size={40} className="text-muted mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            No settlements yet
+          </h3>
+          <p className="text-sm text-muted max-w-md mx-auto">
+            Settlement data will appear here when your funded crops reach
+            milestones. Payouts are distributed automatically via Solana
+            smart contract when harvests are verified.
+          </p>
         </div>
 
         {/* Dispute notice */}

@@ -2,8 +2,19 @@
 
 import { useState, useMemo } from "react";
 import { useWallet } from "@/lib/wallet";
+import {
+  useWallet as useWalletAdapter,
+  useConnection,
+} from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
 import type { LaunchpadListing } from "@/lib/types";
-import { getEscrow, createEscrow, depositToEscrow } from "@/lib/escrow";
+import {
+  getEscrow,
+  createEscrow,
+  buildDepositTransaction,
+  recordPendingDeposit,
+} from "@/lib/escrow";
+import { CLEARMARKET_WALLET } from "@/lib/helius";
 import { X, Wallet, AlertTriangle, Check, Loader2 } from "lucide-react";
 
 interface Props {
@@ -13,9 +24,12 @@ interface Props {
 
 export default function InvestModal({ listing, onClose }: Props) {
   const { address, connected } = useWallet();
+  const walletAdapter = useWalletAdapter();
+  const { connection } = useConnection();
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [txError, setTxError] = useState<string | null>(null);
 
   const tokenPrice = listing.price_per_token || 0;
   const discountPct = listing.oracle_discount_pct;
@@ -42,29 +56,56 @@ export default function InvestModal({ listing, onClose }: Props) {
   const handleInvest = async () => {
     if (!canSubmit || !address) return;
     setSubmitting(true);
+    setTxError(null);
 
     try {
-      // Get or create escrow account for this listing
+      // 1. Get or create escrow account for this listing
       let escrow = await getEscrow(listing.id);
       if (!escrow) {
         escrow = await createEscrow(listing.id);
       }
       if (!escrow) throw new Error("Failed to create escrow");
 
-      // Deposit into escrow (creates deposit record, updates listing totals)
-      const deposit = await depositToEscrow(
+      // 2. Build real USDC transfer transaction
+      const investorPubkey = new PublicKey(address);
+      const tx = await buildDepositTransaction(connection, investorPubkey, usdcAmount);
+
+      // 3. Sign with wallet
+      if (!walletAdapter.signTransaction) {
+        throw new Error("Wallet does not support transaction signing");
+      }
+      const signedTx = await walletAdapter.signTransaction(tx);
+
+      // 4. Send via connection
+      const signature = await connection.sendRawTransaction(signedTx.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: "confirmed",
+      });
+
+      // 5. Record pending deposit in Supabase with the real tx signature
+      const deposit = await recordPendingDeposit(
         escrow.id,
         address,
         usdcAmount,
-        tokensReceived
+        tokensReceived,
+        signature
       );
-      if (!deposit) throw new Error("Deposit failed");
+      if (!deposit) throw new Error("Failed to record deposit");
 
+      // 6. Show success (deposit is "pending" until Helius webhook confirms)
       setSuccess(true);
-    } catch {
-      // Fall back to simulated on error
-      await new Promise((r) => setTimeout(r, 1500));
-      setSuccess(true);
+    } catch (err: unknown) {
+      // Handle wallet rejection specifically
+      const message = err instanceof Error ? err.message : String(err);
+      if (
+        message.includes("User rejected") ||
+        message.includes("Transaction cancelled") ||
+        message.includes("user rejected")
+      ) {
+        setTxError("Transaction cancelled by wallet.");
+      } else {
+        setTxError(message || "Transaction failed. Please try again.");
+      }
     }
 
     setSubmitting(false);
@@ -81,7 +122,7 @@ export default function InvestModal({ listing, onClose }: Props) {
           <h2 className="text-lg font-bold text-foreground">Investment Submitted</h2>
           <p className="text-sm text-muted">
             ${usdcAmount.toLocaleString()} USDC invested for ~{tokensReceived.toLocaleString()} {listing.token_symbol || "tokens"}.
-            Your investment will appear in your portfolio once confirmed on-chain.
+            Your deposit is pending on-chain confirmation.
           </p>
           <button
             onClick={onClose}
@@ -139,7 +180,10 @@ export default function InvestModal({ listing, onClose }: Props) {
               step="10"
               className="w-full bg-secondary text-foreground text-lg font-mono px-4 py-3 rounded-lg border border-border focus:border-primary focus:outline-none transition-colors pr-16"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                setTxError(null);
+              }}
               placeholder="0.00"
               autoFocus
             />
@@ -173,11 +217,19 @@ export default function InvestModal({ listing, onClose }: Props) {
           </div>
         )}
 
-        {/* Error */}
+        {/* Validation error */}
         {error && (
           <div className="flex items-center gap-2 text-sm text-sell bg-sell/10 px-3 py-2 rounded-lg">
             <AlertTriangle size={14} />
             {error}
+          </div>
+        )}
+
+        {/* Transaction error */}
+        {txError && (
+          <div className="flex items-center gap-2 text-sm text-sell bg-sell/10 px-3 py-2 rounded-lg">
+            <AlertTriangle size={14} />
+            {txError}
           </div>
         )}
 
@@ -200,7 +252,7 @@ export default function InvestModal({ listing, onClose }: Props) {
             ) : (
               <Check size={16} />
             )}
-            {submitting ? "Processing..." : `Invest $${usdcAmount.toLocaleString()} USDC`}
+            {submitting ? "Awaiting wallet approval..." : `Invest $${usdcAmount.toLocaleString()} USDC`}
           </button>
         )}
 

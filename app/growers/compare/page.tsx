@@ -1,16 +1,82 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { mockGrowers } from "@/data/mockGrowers";
+import { supabase } from "@/lib/supabase";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+
+interface GrowerData {
+  grower_wallet: string;
+  grower_name: string | null;
+  grower_location: string | null;
+  listing_count: number;
+  total_raised: number;
+  total_investors: number;
+}
 
 function CompareContent() {
   const searchParams = useSearchParams();
-  const ids = searchParams.get("ids")?.split(",") ?? [];
-  const growers = ids.map((id) => mockGrowers.find((g) => g.id === id)).filter(Boolean);
+  const wallets = searchParams.get("ids")?.split(",") ?? [];
+  const [growers, setGrowers] = useState<GrowerData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchGrowers() {
+      if (wallets.length < 2) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("launchpad_listings")
+          .select("grower_wallet, grower_name, grower_location, funding_raised, investor_count")
+          .in("grower_wallet", wallets);
+
+        if (error || !data) {
+          setLoading(false);
+          return;
+        }
+
+        const walletMap = new Map<string, GrowerData>();
+        for (const row of data) {
+          const existing = walletMap.get(row.grower_wallet);
+          if (existing) {
+            existing.listing_count += 1;
+            existing.total_raised += row.funding_raised || 0;
+            existing.total_investors += row.investor_count || 0;
+          } else {
+            walletMap.set(row.grower_wallet, {
+              grower_wallet: row.grower_wallet,
+              grower_name: row.grower_name,
+              grower_location: row.grower_location,
+              listing_count: 1,
+              total_raised: row.funding_raised || 0,
+              total_investors: row.investor_count || 0,
+            });
+          }
+        }
+
+        setGrowers(Array.from(walletMap.values()));
+      } catch {
+        // Fail silently
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchGrowers();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={24} className="text-primary animate-spin" />
+      </div>
+    );
+  }
 
   if (growers.length < 2) {
     return (
@@ -26,14 +92,10 @@ function CompareContent() {
   }
 
   const rows = [
-    { label: "Location", render: (g: typeof growers[0]) => g!.location },
-    { label: "Type", render: (g: typeof growers[0]) => g!.type },
-    { label: "Rating", render: (g: typeof growers[0]) => `${g!.rating} / 5.0` },
-    { label: "Trust Score", render: (g: typeof growers[0]) => `${g!.trustScore}%` },
-    { label: "Batches", render: (g: typeof growers[0]) => g!.batchCount.toString() },
-    { label: "Total Volume", render: (g: typeof growers[0]) => `$${(g!.totalVolume / 1000000).toFixed(2)}M` },
-    { label: "Verified", render: (g: typeof growers[0]) => g!.verified ? "Yes" : "No" },
-    { label: "Specialities", render: (g: typeof growers[0]) => g!.specialities.join(", ") },
+    { label: "Location", render: (g: GrowerData) => g.grower_location || "-" },
+    { label: "Listings", render: (g: GrowerData) => g.listing_count.toString() },
+    { label: "Total Raised", render: (g: GrowerData) => `$${g.total_raised.toLocaleString()}` },
+    { label: "Total Investors", render: (g: GrowerData) => g.total_investors.toString() },
   ];
 
   return (
@@ -54,16 +116,13 @@ function CompareContent() {
             <tr className="border-b border-border">
               <th className="text-left p-4 text-xs text-muted font-medium min-w-[120px]">Metric</th>
               {growers.map((g) => (
-                <th key={g!.id} className="text-left p-4 min-w-[180px]">
-                  <div className="flex items-center gap-2">
-                    <img src={g!.avatar} alt={g!.name} className="w-8 h-8 rounded-full" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground flex items-center gap-1">
-                        {g!.name}
-                        {g!.verified && <CheckCircle size={12} className="text-primary" />}
-                      </p>
-                    </div>
-                  </div>
+                <th key={g.grower_wallet} className="text-left p-4 min-w-[180px]">
+                  <p className="text-sm font-medium text-foreground">
+                    {g.grower_name || "Unnamed Grower"}
+                  </p>
+                  <p className="text-[10px] font-mono text-muted/60 mt-0.5 truncate max-w-[160px]">
+                    {g.grower_wallet}
+                  </p>
                 </th>
               ))}
             </tr>
@@ -73,7 +132,7 @@ function CompareContent() {
               <tr key={row.label} className="border-b border-border/50">
                 <td className="p-4 text-xs text-muted font-medium">{row.label}</td>
                 {growers.map((g) => (
-                  <td key={g!.id} className="p-4 text-sm text-foreground capitalize">
+                  <td key={g.grower_wallet} className="p-4 text-sm text-foreground">
                     {row.render(g)}
                   </td>
                 ))}

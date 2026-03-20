@@ -9,12 +9,11 @@ import ConnectWalletModal from "./ConnectWalletModal";
 import ProfileDropdown from "./ProfileDropdown";
 
 const NAV_LINKS = [
-  { label: "Explore", href: "/" },
+  { label: "Fund", href: "/" },
   { label: "Growers", href: "/growers" },
   { label: "Launchpad", href: "/launchpad" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Exchange", href: "/trade/CML-USDC" },
 ];
 
 export default function Navbar() {
@@ -22,10 +21,6 @@ export default function Navbar() {
   const { connected, disconnect } = useWallet();
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Hide navbar on trade pages (they use their own layout)
-  const isTradePage = pathname?.startsWith("/trade");
-  if (isTradePage) return null;
 
   return (
     <>

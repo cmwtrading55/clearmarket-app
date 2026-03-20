@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClearMarket Labs — Development Update</title>
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --fg: #111827;
+      --primary: #00C98D;
+      --primary-light: rgba(0, 201, 141, 0.08);
+      --primary-border: rgba(0, 201, 141, 0.25);
+      --secondary: #F3F4F6;
+      --card: #F9FAFB;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --buy: #16A34A;
+      --sell: #DC2626;
+      --radius: 12px;
+      --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      word-break: break-word;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .logo {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--fg);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--primary);
+    }
+    .brand {
+      font-size: 18px; font-weight: 700; color: var(--fg);
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 13px; color: var(--muted); margin-bottom: 32px;
+    }
+
+    h1 {
+      font-size: 28px; font-weight: 800; color: var(--fg);
+      letter-spacing: -0.03em; margin-bottom: 6px;
+      line-height: 1.2;
+    }
+    .date-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: var(--primary);
+      background: var(--primary-light);
+      border: 1px solid var(--primary-border);
+      padding: 4px 12px; border-radius: 20px;
+      margin-bottom: 32px;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      margin-bottom: 40px;
+    }
+    .stat {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+    }
+    .stat-label {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 22px; font-weight: 800; font-family: var(--mono);
+      color: var(--fg); letter-spacing: -0.02em;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 36px;
+    }
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .section-num {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--primary-light); border: 1px solid var(--primary-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--primary);
+      flex-shrink: 0;
+    }
+    h2 {
+      font-size: 17px; font-weight: 700; color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+    p, li {
+      font-size: 14px; color: var(--muted); line-height: 1.65;
+    }
+    p { margin-bottom: 10px; }
+    ul { padding-left: 18px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+    li strong { color: var(--fg); font-weight: 600; }
+
+    /* Tables */
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; margin: 12px 0;
+    }
+    thead th {
+      text-align: left; font-size: 10px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 8px 10px;
+      border-bottom: 2px solid var(--border);
+    }
+    tbody td {
+      padding: 8px 10px; border-bottom: 1px solid var(--border);
+      color: var(--fg);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    .mono { font-family: var(--mono); font-size: 12px; }
+    .tag {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px;
+    }
+    .tag-green { background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-border); }
+    .tag-muted { background: var(--secondary); color: var(--muted); }
+
+    /* Code / commit blocks */
+    .commits {
+      background: var(--fg); border-radius: var(--radius);
+      padding: 16px 20px; margin: 12px 0; overflow-x: auto;
+    }
+    .commits code {
+      font-family: var(--mono); font-size: 12px;
+      color: #D1D5DB; line-height: 1.8; white-space: pre;
+    }
+    .commits .hash { color: var(--primary); }
+    .commits .msg { color: #F3F4F6; }
+
+    /* Divider */
+    hr {
+      border: none; height: 1px; background: var(--border);
+      margin: 36px 0;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .footer p {
+      font-size: 12px; color: var(--muted);
+    }
+    .footer a {
+      color: var(--primary); text-decoration: none; font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 22px; }
+      .container { padding: 32px 16px 60px; }
+      table { font-size: 12px; }
+      .commits { padding: 12px 14px; }
+      .commits code { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo"><div class="logo-dot"></div></div>
+      <span class="brand">ClearMarket Labs</span>
+    </div>
+    <p class="subtitle">Internal Development Update</p>
+
+    <h1>Multi-Commodity Expansion, Solana Infrastructure, and Exchange Upgrades</h1>
+    <div class="date-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      18 &ndash; 19 March 2026
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Commits</div>
+        <div class="stat-value">5</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Lines Added</div>
+        <div class="stat-value">3.9k</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Files Changed</div>
+        <div class="stat-value">27</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Edge Functions</div>
+        <div class="stat-value">3</div>
+      </div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>Helius Solana Infrastructure</h2>
+      </div>
+      <p>Installed Helius CLI and created an on-chain ClearMarket account. Production-grade Solana RPC replacing the public endpoint, with full platform integration across all Helius capabilities.</p>
+      <ul>
+        <li><strong>Wallet:</strong> <span class="mono">HaniJR...65bG</span> (0.5 SOL, 0.86 USDC)</li>
+        <li><strong>Sender API:</strong> Priority transaction landing for escrow deposits and orders</li>
+        <li><strong>DAS API:</strong> Real portfolio data from on-chain token holdings</li>
+        <li><strong>Enhanced Transactions:</strong> Human-readable trade feed</li>
+        <li><strong>ZK Compression:</strong> Grower verification badge NFTs at ~0.000005 SOL each</li>
+        <li><strong>WebSocket streaming:</strong> Real-time escrow balance changes and market data</li>
+        <li><strong>Webhook:</strong> Auto-confirm deposits and milestone releases on-chain</li>
+        <li><strong>React hooks:</strong> useWalletAssets, useWalletBalances, useTokenHolders, useTransactionHistory, useAccountStream, useNetworkStatus</li>
+      </ul>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>Soybeans as Second Commodity</h2>
+      </div>
+      <p>Full end-to-end soybean support. The oracle scoring engine is now commodity-agnostic, with pluggable field definitions per commodity type. Adding a new commodity is a single config object.</p>
+      <ul>
+        <li><strong>Submission form:</strong> Cannabis/Soybeans toggle with commodity-specific fields (variety, protein, moisture, oil, USDA grade, storage, delivery terms)</li>
+        <li><strong>Launchpad:</strong> Commodity filter chips, soybean-appropriate imagery and metrics</li>
+        <li><strong>Exchange:</strong> SOY-USDC trading pair at $11.42 with commodity-aware volatility</li>
+        <li><strong>Database:</strong> 12 new columns on launchpad_listings</li>
+      </ul>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>Soybean Price Oracle</h2>
+      </div>
+      <p>No on-chain soybean price feed exists anywhere. We built a custom oracle edge function that fetches from FRED/USDA and World Bank, computes a confidence-weighted composite price, detects anomalies, and updates both the oracle table and SOY-USDC ticker.</p>
+      <ul>
+        <li><strong>Schedule:</strong> pg_cron every 15 minutes, running live now</li>
+        <li><strong>Sources:</strong> FRED/USDA (monthly), World Bank (daily), simulated fallback</li>
+        <li><strong>Pyth outreach:</strong> Email drafted requesting CME ZS soybean futures feeds (they already have corn)</li>
+      </ul>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>Milestone-Based Escrow</h2>
+      </div>
+      <p>Funds are held in escrow and released at verified checkpoints, not all upfront. Four milestones per crop cycle.</p>
+      <table>
+        <thead><tr><th>Milestone</th><th>Release</th><th>Trigger</th></tr></thead>
+        <tbody>
+          <tr><td>Planting</td><td class="mono">25%</td><td>Verified by oracle/auditor</td></tr>
+          <tr><td>Growth</td><td class="mono">25%</td><td>Verified by oracle/auditor</td></tr>
+          <tr><td>Harvest</td><td class="mono">35%</td><td>Verified by oracle/auditor</td></tr>
+          <tr><td>Delivery</td><td class="mono">15%</td><td>Verified by oracle/auditor</td></tr>
+        </tbody>
+      </table>
+      <p>Helius webhook automatically confirms deposits and releases when transactions land on Solana. Three new Supabase tables: escrow_accounts, escrow_deposits, escrow_milestones.</p>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Grower Verification + NFT Badges</h2>
+      </div>
+      <p>Growers verify wallet ownership, submit document references (hashes stored for tamper evidence), and earn compressed NFT badges after completing funding cycles.</p>
+      <table>
+        <thead><tr><th>Badge Tier</th><th>Requirement</th><th>Minting Cost</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tag-green">Verified</span></td><td>1+ completed cycle</td><td class="mono">~0.000005 SOL</td></tr>
+          <tr><td><span class="tag tag-green">Trusted</span></td><td>3+ completed cycles</td><td class="mono">~0.000005 SOL</td></tr>
+          <tr><td><span class="tag tag-green">Elite</span></td><td>10+ completed cycles</td><td class="mono">~0.000005 SOL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>Exchange UX Upgrades</h2>
+      </div>
+      <ul>
+        <li><strong>Depth chart:</strong> Canvas-rendered cumulative bid/ask area chart with Book/Depth toggle</li>
+        <li><strong>Order book grouping:</strong> Tick size selector (0.01, 0.1, 1.0)</li>
+        <li><strong>Mobile tabbed panels:</strong> Chart | Book | Order tabs replacing stacked layout</li>
+        <li><strong>Keyboard shortcuts:</strong> 1/2/3 for tabs, D for depth, Esc to blur</li>
+        <li><strong>InvestModal:</strong> Oracle discount preview, quick-invest buttons, token calculation</li>
+        <li><strong>Investor cap table:</strong> Token holder distribution on launchpad detail pages</li>
+      </ul>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Crowdfunding Progress</h2>
+      </div>
+      <p>Funding progress bars on listing cards and detail pages showing raised vs target with investor count. InvestModal wired to escrow system for real deposit tracking with oracle discount applied to token pricing.</p>
+    </div>
+
+    <hr>
+
+    <!-- Commits -->
+    <h2 style="margin-bottom: 12px;">Git History</h2>
+    <div class="commits"><code><span class="hash">268ff2e</span> <span class="msg">feat: complete Helius platform integration across all capabilities</span>
+<span class="hash">41444ae</span> <span class="msg">fix: QA audit fixes for strain nullable type and escrow promise chain</span>
+<span class="hash">21a7ae0</span> <span class="msg">feat: escrow program, grower verification, soybean oracle cron, and simulator v2</span>
+<span class="hash">917138d</span> <span class="msg">feat: multi-commodity launchpad, soybeans, exchange upgrades, and Helius RPC</span>
+<span class="hash">cf079f9</span> <span class="msg">fix: QA audit pass, exchange rendering, error boundaries, and centralised config</span></code></div>
+
+    <!-- Infra summary -->
+    <h2 style="margin-bottom: 12px; margin-top: 32px;">Infrastructure Deployed</h2>
+    <table>
+      <thead><tr><th>Component</th><th>Type</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Soybean price oracle</td><td class="mono">Edge function + pg_cron</td><td><span class="tag tag-green">Live (15min)</span></td></tr>
+        <tr><td>Helius webhook</td><td class="mono">Edge function + Helius</td><td><span class="tag tag-green">Live</span></td></tr>
+        <tr><td>Trade simulator v2</td><td class="mono">Edge function</td><td><span class="tag tag-green">Deployed</span></td></tr>
+        <tr><td>SOY-USDC market</td><td class="mono">Supabase data</td><td><span class="tag tag-green">Active</span></td></tr>
+        <tr><td>Escrow tables</td><td class="mono">Supabase migration</td><td><span class="tag tag-green">Applied</span></td></tr>
+        <tr><td>Grower verifications</td><td class="mono">Supabase migration</td><td><span class="tag tag-green">Applied</span></td></tr>
+        <tr><td>Helius RPC</td><td class="mono">Mainnet endpoint</td><td><span class="tag tag-green">Active</span></td></tr>
+      </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="logo" style="margin: 0 auto 12px;"><div class="logo-dot"></div></div>
+      <p><strong>ClearMarket Labs</strong></p>
+      <p style="margin-top: 4px;">Built on Solana &middot; Powered by <a href="https://helius.dev">Helius</a> &middot; Data via <a href="https://supabase.com">Supabase</a></p>
+      <p style="margin-top: 8px; font-size: 11px; color: #9CA3AF;">This document is for internal use only and contains proprietary technical details.</p>
+    </div>
+
+  </div>
+</body>
+</html>

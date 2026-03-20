@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@/lib/wallet";
 import { calcOracleDiscount, COMMODITY_CONFIGS } from "@/lib/oracle";
 import type { CommodityType } from "@/lib/oracle";
-import { mockBatches } from "@/data/mockBatches";
 import type { LaunchpadListing } from "@/lib/types";
 import StepIndicator from "./StepIndicator";
 import OracleScorePanel from "./OracleScorePanel";
@@ -114,7 +113,7 @@ export default function SubmissionForm() {
   };
 
   const oracle = useMemo(
-    () => calcOracleDiscount(form, mockBatches, form.grower_wallet as string || "", commodityType),
+    () => calcOracleDiscount(form, [], form.grower_wallet as string || "", commodityType),
     [form, commodityType]
   );
 
