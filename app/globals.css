@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0A0A0F;
+  --background: #030712;
   --foreground: #E8E6F0;
-  --primary: #7C3AED;
-  --secondary: #151520;
-  --card-bg: #12121A;
-  --muted: #6B6B80;
-  --accent-glow: rgba(124, 58, 237, 0.12);
-  --border: #1E1E2E;
-  --buy: #22C55E;
+  --primary: #9810FA;
+  --secondary: #111827;
+  --card-bg: #0F1219;
+  --muted: #6A7282;
+  --accent-glow: rgba(152, 16, 250, 0.12);
+  --teal: #00B8DB;
+  --teal-glow: rgba(0, 184, 219, 0.12);
+  --border: #1E2939;
+  --buy: #05DF72;
   --sell: #EF4444;
-  --warning: #F59E0B;
+  --warning: #F0B100;
 }
 
 @theme inline {
@@ -25,6 +27,8 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-accent-glow: var(--accent-glow);
+  --color-teal: var(--teal);
+  --color-teal-glow: var(--teal-glow);
   --color-buy: var(--buy);
   --color-sell: var(--sell);
   --color-warning: var(--warning);
@@ -41,20 +45,42 @@ body {
   color: var(--foreground);
 }
 
+/* Hero gradient background */
+.bg-hero-gradient {
+  background-image: linear-gradient(116deg, rgba(152, 16, 250, 0.2) 0%, rgb(3, 7, 18) 50%, rgba(0, 184, 219, 0.2) 100%);
+}
+
 /* Grid pattern background */
 .bg-grid-pattern {
   background-image:
-    linear-gradient(rgba(124, 58, 237, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124, 58, 237, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
-/* Gradient text */
+/* Gradient text — purple to teal */
 .text-gradient {
-  background: linear-gradient(135deg, #7C3AED, #22C55E);
+  background: linear-gradient(135deg, #AD46FF, #53EAFD);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Gradient text — purple to green */
+.text-gradient-green {
+  background: linear-gradient(135deg, #9810FA, #05DF72);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gradient border for cards */
+.border-gradient {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  background-image: linear-gradient(var(--card-bg), var(--card-bg)),
+    linear-gradient(135deg, rgba(152, 16, 250, 0.3), rgba(0, 184, 219, 0.3));
+  background-origin: border-box;
 }
 
 /* Scrollbar styling */
