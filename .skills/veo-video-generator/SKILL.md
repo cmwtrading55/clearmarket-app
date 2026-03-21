@@ -14,13 +14,13 @@ Use this skill to generate high-fidelity cinematic videos using Veo (Google's ge
 4. **Integration**: Update the React/HTML code to point to the newly generated file.
 
 ## Execution Pattern
-You must use the bundled `generate.py` script. The Gemini API key is available in your global context or `AIzaSyDp14ZICeOgFQs2lCRNKqnzlB_fNTYiXPY`.
+You must use the bundled `generate.py` script. Ensure your Gemini API key is set in your environment as `GOOGLE_API_KEY`.
 
 ```bash
 python3 path/to/scripts/generate.py \
   --prompt "[YOUR_ENHANCED_PROMPT]" \
   --output "public/video/[FILENAME].mp4" \
-  --api_key "AIzaSyDp14ZICeOgFQs2lCRNKqnzlB_fNTYiXPY"
+  --api_key "$GOOGLE_API_KEY"
 ```
 
 ## Prompt Engineering Guidelines

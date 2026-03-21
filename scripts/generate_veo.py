@@ -3,7 +3,11 @@ import time
 import os
 import requests
 
-API_KEY = "AIzaSyDp14ZICeOgFQs2lCRNKqnzlB_fNTYiXPY"
+API_KEY = os.environ.get("GOOGLE_API_KEY")
+if not API_KEY:
+    print("Error: GOOGLE_API_KEY environment variable not set.")
+    exit(1)
+
 OUTPUT_DIR = "public/video"
 
 PROMPTS = {
