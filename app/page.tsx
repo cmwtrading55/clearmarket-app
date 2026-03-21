@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import VideoBackground from "@/components/VideoBackground";
 import {
   Leaf,
@@ -122,8 +121,6 @@ const FOOTER_STATS = [
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar />
-
       {/* ============================================================ */}
       {/* 1. HERO — Cinematic Intro                                    */}
       {/* ============================================================ */}
